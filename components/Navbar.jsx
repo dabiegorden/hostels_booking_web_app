@@ -25,8 +25,8 @@ const Navbar = () => {
   const [hostelsMenuOpen, setHostelsMenuOpen] = useState(false)
 
   return (
-    <header className="bg-white shadow-sm">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8" aria-label="Global">
+    <header>
+      <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8 fixed w-full top-0 left-0 right-0 z-10 bg-white shadow-sm" aria-label="Global">
         <div className="flex lg:flex-1">
           <Link href="/" className="-m-1.5 p-1.5 flex items-center">
             {/* <span className="">CUG Hostel Booking</span> */}
