@@ -12,8 +12,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Hostel booking app",
-  description: "Full-stack hostel booking app",
+  title: "CUG Hostel booking app",
+  description: "Full-stack cug hostel booking app",
 };
 
 export default function RootLayout({ children }) {
