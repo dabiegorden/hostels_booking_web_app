@@ -122,7 +122,7 @@ const Navbar = () => {
           </Link>
         </div>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-6">
-          <Link href="/auth/login" className="text-sm/6 font-semibold text-gray-900 flex items-center cursor-pointer gap-1">
+          <Link href="/auth/signin" className="text-sm/6 font-semibold text-gray-900 flex items-center cursor-pointer gap-1">
             <LogIn className="size-4" />
             Log in
           </Link>
