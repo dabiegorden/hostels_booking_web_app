@@ -609,7 +609,7 @@ const HostelOwnerRegistration = () => {
         </form>
         
         <div className="mt-8 text-center text-gray-600 text-sm">
-          Already have an account? <Link href="/owner/signin" className="text-indigo-600 hover:underline">Signin here</Link>
+          Are you a hostel owner and already have an account? <Link href="/hostel-owner/signin" className="text-indigo-600 hover:underline">Signin here</Link>
         </div>
       </div>
     </div>
