@@ -1,12 +1,13 @@
-// routes/studentRoutes.js
 const express = require('express');
-const router = express.Router();
 const studentController = require('../controllers/studentController');
 const { isAuthenticated, isStudent } = require('../middleware/middleware');
 
-router.post('/register', studentController.register);
+const router = express.Router();
 
-// Protected routes
-router.get('/profile', isAuthenticated, isStudent, studentController.getProfile);
+// All routes require authentication and student role
+router.use(isAuthenticated, isStudent);
+
+router.get('/profile', studentController.getProfile);
+router.put('/profile', studentController.updateProfile);
 
 module.exports = router;

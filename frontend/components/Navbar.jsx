@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { 
   ChevronDown, 
   Menu, 
@@ -14,22 +14,144 @@ import {
   User,
   LogIn,
   UserPlus,
-  Settings
+  Settings,
+  LogOut,
+  GraduationCap,
+  Phone,
+  Mail,
+  BookOpen,
+  School,
+  Clock
 } from 'lucide-react'
 import logoImage from "@/public/assets/cug-logo.jpg";
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [hostelsMenuOpen, setHostelsMenuOpen] = useState(false)
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const [student, setStudent] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const profileMenuRef = useRef(null)
+  const hostelsMenuRef = useRef(null)
+  const router = useRouter()
+  
+  // Check if student is logged in
+  const isLoggedIn = !!student;
+  
+  // Fetch current user on component mount
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/auth/me', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include' // Important for sending cookies
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.user && data.user.role === 'student') {
+            // Fetch complete student profile if we only have basic session info
+            const profileResponse = await fetch('http://localhost:5000/api/students/profile', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include'
+            });
+            
+            if (profileResponse.ok) {
+              const profileData = await profileResponse.json();
+              setStudent(profileData.student);
+            } else {
+              // If profile fetch fails, use basic session data
+              setStudent(data.user);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCurrentUser();
+  }, []);
+  
+  // Handle click outside to close menus
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Close profile menu when clicking outside
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setProfileMenuOpen(false);
+      }
+      
+      // Close hostels menu when clicking outside
+      if (hostelsMenuRef.current && !hostelsMenuRef.current.contains(event.target)) {
+        setHostelsMenuOpen(false);
+      }
+    };
+
+    // Add event listener
+    document.addEventListener('mousedown', handleClickOutside);
+    
+    // Clean up
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+  
+  // Implement logout functionality
+  const handleLogout = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        // Clear the student state
+        setStudent(null);
+        // Close any open menus
+        setProfileMenuOpen(false);
+        setMobileMenuOpen(false);
+        // Redirect to home page
+        router.push('/students/signin');
+      } else {
+        console.error('Logout failed');
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
+  
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
 
   return (
     <header>
       <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8 fixed w-full top-0 left-0 right-0 z-10 bg-white shadow-sm" aria-label="Global">
-        <div className="flex lg:flex-1">
+        <div className="flex items-center lg:flex-1">
           <Link href="/" className="-m-1.5 p-1.5 flex items-center">
-            {/* <span className="">CUG Hostel Booking</span> */}
             <Image src={logoImage} height={32} width={32} className="mr-2" alt="CUG Logo" />
             <span className="font-bold text-xl text-indigo-700">CUG Hostels booking</span>
           </Link>
@@ -50,7 +172,7 @@ const Navbar = () => {
             Home
           </Link>
           
-          <div className="relative">
+          <div className="relative" ref={hostelsMenuRef}>
             <button 
               type="button" 
               className="cursor-pointer flex items-center gap-x-1 text-sm/6 font-semibold text-gray-900" 
@@ -122,14 +244,92 @@ const Navbar = () => {
           </Link>
         </div>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-6">
-          <Link href="/auth/signin" className="text-sm/6 font-semibold text-gray-900 flex items-center cursor-pointer gap-1">
-            <LogIn className="size-4" />
-            Log in
-          </Link>
-          <Link href="/auth/signup" className="rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 cursor-pointer flex items-center gap-1">
-            <UserPlus className="size-4" />
-            Sign up
-          </Link>
+          {loading ? (
+            <div className="text-sm/6 text-gray-500">Loading...</div>
+          ) : isLoggedIn ? (
+            <div className="relative" ref={profileMenuRef}>
+              <button 
+                type="button" 
+                className="cursor-pointer flex items-center gap-x-1 text-sm/6 font-semibold text-gray-900" 
+                aria-expanded={profileMenuOpen}
+                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+              >
+                <User className="size-4" />
+                {student.name || 'Student'}
+                <ChevronDown className="size-5 flex-none text-gray-400" />
+              </button>
+
+              {profileMenuOpen && (
+                <div className="absolute right-0 z-10 mt-3 w-80 overflow-hidden rounded-3xl bg-white ring-1 shadow-lg ring-gray-900/5">
+                  <div className="p-4">
+                    <div className="border-b pb-3 mb-3">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="bg-indigo-100 text-indigo-700 p-3 rounded-full">
+                          <User className="size-6" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">{student.name}</p>
+                          <p className="text-sm text-gray-500">{student.role || 'Student'}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Mail className="size-4 text-gray-500" />
+                        <span className="text-gray-700">{student.email}</span>
+                      </div>
+                      {student.studentId && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <GraduationCap className="size-4 text-gray-500" />
+                          <span className="text-gray-700">{student.studentId}</span>
+                        </div>
+                      )}
+                      {student.phoneNumber && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Phone className="size-4 text-gray-500" />
+                          <span className="text-gray-700">{student.phoneNumber}</span>
+                        </div>
+                      )}
+                      {student.program && student.level && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <BookOpen className="size-4 text-gray-500" />
+                          <span className="text-gray-700">{student.program} - Level {student.level}</span>
+                        </div>
+                      )}
+                      {student.department && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <School className="size-4 text-gray-500" />
+                          <span className="text-gray-700">{student.department}</span>
+                        </div>
+                      )}
+                      {student.createdAt && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Clock className="size-4 text-gray-500" />
+                          <span className="text-gray-700">Joined: {formatDate(student.createdAt)}</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="border-t pt-3 space-y-2">
+                      <button 
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 text-sm/6 font-semibold text-red-600 hover:text-red-700 w-full py-2 cursor-pointer"
+                      >
+                        <LogOut className="size-4" />
+                        Log Out
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link href="/students/signin" className="text-sm/6 font-semibold flex items-center cursor-pointer gap-1 bg-indigo-500 text-white px-3 py-2 rounded-md">
+              <LogIn className="size-4" />
+              Log in
+            </Link>
+          )}
         </div>
       </nav>
       
@@ -140,7 +340,7 @@ const Navbar = () => {
             <div className="flex items-center justify-between">
               <Link href="/" className="-m-1.5 p-1.5 flex items-center">
                 <span className="sr-only">CUG Hostel Booking</span>
-                <img className="h-8 w-auto mr-2" src="/logo.png" alt="CUG Logo" />
+                <Image src={logoImage} height={32} width={32} className="mr-2" alt="CUG Logo" />
                 <span className="font-bold text-indigo-700">CUG Hostels</span>
               </Link>
               <button 
@@ -154,6 +354,48 @@ const Navbar = () => {
             </div>
             <div className="mt-6 flow-root">
               <div className="-my-6 divide-y divide-gray-500/10">
+                {!loading && isLoggedIn && (
+                  <div className="py-6">
+                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="bg-indigo-100 text-indigo-700 p-3 rounded-full">
+                          <User className="size-6" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">{student.name}</p>
+                          <p className="text-sm text-gray-500">{student.email}</p>
+                        </div>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        {student.studentId && (
+                          <div className="flex items-center gap-2">
+                            <GraduationCap className="size-4 text-gray-500" />
+                            <span className="text-gray-700">{student.studentId}</span>
+                          </div>
+                        )}
+                        {student.phoneNumber && (
+                          <div className="flex items-center gap-2">
+                            <Phone className="size-4 text-gray-500" />
+                            <span className="text-gray-700">{student.phoneNumber}</span>
+                          </div>
+                        )}
+                        {student.program && student.level && (
+                          <div className="flex items-center gap-2">
+                            <BookOpen className="size-4 text-gray-500" />
+                            <span className="text-gray-700">{student.program} - Level {student.level}</span>
+                          </div>
+                        )}
+                        {student.department && (
+                          <div className="flex items-center gap-2">
+                            <School className="size-4 text-gray-500" />
+                            <span className="text-gray-700">{student.department}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="space-y-2 py-6">
                   <Link href="/" className="-mx-3 flex items-center rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
                     <Home className="mr-2 size-5" />
@@ -199,14 +441,28 @@ const Navbar = () => {
                   </Link>
                 </div>
                 <div className="py-6 space-y-2">
-                  <Link href="/auth/login" className="-mx-3 flex items-center rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
-                    <LogIn className="mr-2 size-5" />
-                    Log in
-                  </Link>
-                  <Link href="/auth/signup" className="-mx-3 flex items-center rounded-lg px-3 py-2.5 text-base/7 font-semibold bg-indigo-600 text-white hover:bg-indigo-500">
-                    <UserPlus className="mr-2 size-5" />
-                    Sign up
-                  </Link>
+                  {loading ? (
+                    <div className="text-sm text-gray-500 p-3">Loading...</div>
+                  ) : isLoggedIn ? (
+                    <>
+                      <Link href="/students/profile" className="-mx-3 flex items-center rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
+                        <Settings className="mr-2 size-5" />
+                        Edit Profile
+                      </Link>
+                      <button 
+                        onClick={handleLogout}
+                        className="-mx-3 flex w-full items-center rounded-lg px-3 py-2.5 text-base/7 font-semibold text-red-600 hover:bg-gray-50"
+                      >
+                        <LogOut className="mr-2 size-5" />
+                        Log out
+                      </button>
+                    </>
+                  ) : (
+                    <Link href="/students/signin" className="-mx-3 flex items-center rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
+                      <LogIn className="mr-2 size-5" />
+                      Log in
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

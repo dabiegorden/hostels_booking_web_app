@@ -1,84 +1,86 @@
 const Admin = require('../models/Admin');
 const Student = require('../models/Students');
-const HostelOwner = require('../models/HostelOwner');
-const Hostel = require('../models/Hostel');
 
-exports.createAdmin = async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-    
-    // Check if admin already exists
-    const existingAdmin = await Admin.findOne({ email });
-    if (existingAdmin) {
-      return res.status(400).json({ message: 'Admin email already registered' });
-    }
-    
-    // Create new admin
-    const admin = new Admin({
-      name,
-      email,
-      password
-    });
-    
-    await admin.save();
-    
-    return res.status(201).json({
-      message: 'Admin created successfully',
-      adminId: admin._id
-    });
-    
-  } catch (error) {
-    console.error('Create admin error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-exports.getStudents = async (req, res) => {
+// Get all students
+exports.getAllStudents = async (req, res) => {
   try {
     const students = await Student.find().select('-password');
-    return res.status(200).json({ students });
+    res.status(200).json({ students });
   } catch (error) {
-    console.error('Get students error:', error);
+    console.error('Get all students error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-exports.getHostelOwners = async (req, res) => {
+// Get student by ID
+exports.getStudentById = async (req, res) => {
   try {
-    const hostelOwners = await HostelOwner.find().select('-password');
-    return res.status(200).json({ hostelOwners });
-  } catch (error) {
-    console.error('Get hostel owners error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-exports.getHostels = async (req, res) => {
-  try {
-    const hostels = await Hostel.find().populate('owner', 'name email phoneNumber -_id');
-    return res.status(200).json({ hostels });
-  } catch (error) {
-    console.error('Get hostels error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-exports.getDashboardStats = async (req, res) => {
-  try {
-    const studentCount = await Student.countDocuments();
-    const hostelOwnerCount = await HostelOwner.countDocuments();
-    const hostelCount = await Hostel.countDocuments();
+    const student = await Student.findById(req.params.id).select('-password');
     
-    return res.status(200).json({
-      stats: {
-        studentCount,
-        hostelOwnerCount,
-        hostelCount
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    
+    res.status(200).json({ student });
+  } catch (error) {
+    console.error('Get student error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Delete student
+exports.deleteStudent = async (req, res) => {
+  try {
+    const student = await Student.findByIdAndDelete(req.params.id);
+    
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    
+    res.status(200).json({ message: 'Student deleted successfully' });
+  } catch (error) {
+    console.error('Delete student error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Update student
+exports.updateStudent = async (req, res) => {
+  try {
+    const { name, email, phoneNumber, program, level, department } = req.body;
+    
+    const student = await Student.findById(req.params.id);
+    
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    
+    // Update fields
+    student.name = name || student.name;
+    student.email = email || student.email;
+    student.phoneNumber = phoneNumber || student.phoneNumber;
+    student.program = program || student.program;
+    student.level = level || student.level;
+    student.department = department || student.department;
+    
+    await student.save();
+    
+    res.status(200).json({
+      message: 'Student updated successfully',
+      student: {
+        id: student._id,
+        name: student.name,
+        email: student.email,
+        studentId: student.studentId,
+        phoneNumber: student.phoneNumber,
+        program: student.program,
+        level: student.level,
+        department: student.department
       }
     });
-    
   } catch (error) {
-    console.error('Get dashboard stats error:', error);
+    console.error('Update student error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
+

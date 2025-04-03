@@ -11,18 +11,19 @@ const studentSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    trim: true
+    trim: true,
+    lowercase: true
   },
   studentId: {
     type: String,
     required: true,
     unique: true,
-    trim: true
+    match: /^(UGR|UGW)\d{10}$/
   },
   phoneNumber: {
     type: String,
     required: true,
-    trim: true
+    match: /^\d{10}$/
   },
   program: {
     type: String,
@@ -30,7 +31,8 @@ const studentSchema = new mongoose.Schema({
   },
   level: {
     type: String,
-    required: true
+    required: true,
+    enum: ['100', '200', '300', '400']
   },
   department: {
     type: String,
@@ -43,8 +45,12 @@ const studentSchema = new mongoose.Schema({
   role: {
     type: String,
     default: 'student'
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
   }
-}, { timestamps: true });
+});
 
 // Hash password before saving
 studentSchema.pre('save', async function(next) {
@@ -59,10 +65,11 @@ studentSchema.pre('save', async function(next) {
   }
 });
 
-// Compare password method
+// Method to compare passwords
 studentSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
 const Student = mongoose.model('Student', studentSchema);
+
 module.exports = Student;

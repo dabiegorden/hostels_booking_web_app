@@ -1,103 +1,194 @@
-// controllers/authController.js
-const Admin = require('../models/Admin');
 const Student = require('../models/Students');
-const HostelOwner = require('../models/HostelOwner');
+const Admin = require('../models/Admin');
 
-// Helper function to get model based on role
-const getModelByRole = (role) => {
-  switch (role) {
-    case 'admin':
-      return Admin;
-    case 'student':
-      return Student;
-    case 'hostelOwner':
-      return HostelOwner;
-    default:
-      return null;
+// Student Registration
+exports.registerStudent = async (req, res) => {
+  try {
+    const {
+      name,
+      email,
+      studentId,
+      phoneNumber,
+      program,
+      level,
+      department,
+      password,
+      role
+    } = req.body;
+
+    // Check if student already exists
+    const existingStudent = await Student.findOne({ 
+      $or: [{ email }, { studentId }]
+    });
+
+    if (existingStudent) {
+      return res.status(400).json({ 
+        message: existingStudent.email === email 
+          ? 'Email already in use' 
+          : 'Student ID already registered' 
+      });
+    }
+
+    // Create new student
+    const student = new Student({
+      name,
+      email,
+      studentId,
+      phoneNumber,
+      program,
+      level,
+      department,
+      password,
+      role: 'student'
+    });
+
+    await student.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Student registration successful'
+    });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({
+      message: 'Server error during registration'
+    });
   }
 };
 
-exports.login = async (req, res) => {
+// Student Login
+exports.loginStudent = async (req, res) => {
   try {
-    const { email, password, role } = req.body;
-    
-    if (!email || !password || !role) {
-      return res.status(400).json({ message: 'Please provide email, password and role' });
-    }
-    
-    const Model = getModelByRole(role);
-    if (!Model) {
-      return res.status(400).json({ message: 'Invalid role' });
-    }
-    
-    // Find user by email
-    const user = await Model.findOne({ email });
-    if (!user) {
+    const { email, password, rememberMe } = req.body;
+
+    // Find student by email
+    const student = await Student.findOne({ email });
+    if (!student) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-    
+
     // Verify password
-    const isMatch = await user.comparePassword(password);
+    const isMatch = await student.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
+
+    // Set session
+    req.session.user = {
+      id: student._id,
+      role: 'student',
+      name: student.name,
+      email: student.email,
+      studentId: student.studentId
+    };
     
-    // Set session data
-    req.session.userId = user._id;
-    req.session.userRole = role;
-    
-    // Send user data without password
-    const userData = user.toObject();
-    delete userData.password;
-    
-    return res.status(200).json({
-      message: 'Login successful',
-      user: userData
+    // Update cookie expiration if rememberMe is true
+    if (rememberMe) {
+      req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 30; // 30 days
+    }
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: student._id,
+        name: student.name,
+        email: student.email,
+        role: 'student'
+      }
     });
-    
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({
+      message: 'Server error during login'
+    });
   }
 };
 
+// Admin Login
+exports.loginAdmin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find admin by email
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+      return res.status(401).json({ message: 'Invalid admin credentials' });
+    }
+
+    // Verify password
+    const isMatch = await admin.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid admin credentials' });
+    }
+
+    // Set session
+    req.session.user = {
+      id: admin._id,
+      role: 'admin',
+      name: admin.name,
+      email: admin.email
+    };
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        role: 'admin'
+      }
+    });
+  } catch (error) {
+    console.error('Admin login error:', error);
+    res.status(500).json({
+      message: 'Server error during admin login'
+    });
+  }
+};
+
+// Logout
 exports.logout = (req, res) => {
   req.session.destroy((err) => {
     if (err) {
       return res.status(500).json({ message: 'Logout failed' });
     }
     res.clearCookie('connect.sid');
-    return res.status(200).json({ message: 'Logged out successfully' });
+    res.status(200).json({ message: 'Logged out successfully' });
   });
 };
 
-exports.checkAuth = async (req, res) => {
+// Get current user
+exports.getCurrentUser = (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ message: 'Not authenticated' });
+  }
+  
+  res.status(200).json({
+    user: req.session.user
+  });
+};
+
+// Get admin info
+exports.getAdminInfo = async (req, res) => {
   try {
-    if (!req.session.userId || !req.session.userRole) {
-      return res.status(401).json({ authenticated: false });
+    const admin = await Admin.findById(req.session.user.id).select('-password');
+    
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
     }
     
-    const Model = getModelByRole(req.session.userRole);
-    if (!Model) {
-      return res.status(400).json({ message: 'Invalid role' });
-    }
-    
-    const user = await Model.findById(req.session.userId);
-    if (!user) {
-      return res.status(401).json({ authenticated: false });
-    }
-    
-    const userData = user.toObject();
-    delete userData.password;
-    
-    return res.status(200).json({
-      authenticated: true,
-      user: userData,
-      role: req.session.userRole
+    res.status(200).json({ 
+      success: true,
+      admin: {
+        id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        role: admin.role,
+        createdAt: admin.createdAt
+      }
     });
-    
   } catch (error) {
-    console.error('Check auth error:', error);
+    console.error('Get admin info error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

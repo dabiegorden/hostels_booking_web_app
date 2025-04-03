@@ -1,34 +1,23 @@
-const isAuthenticated = (req, res, next) => {
-    if (req.session.userId && req.session.userRole) {
-      return next();
-    }
-    return res.status(401).json({ message: 'Not authenticated' });
-  };
-  
-  const isAdmin = (req, res, next) => {
-    if (req.session.userId && req.session.userRole === 'admin') {
-      return next();
-    }
-    return res.status(403).json({ message: 'Access denied. Admin permission required.' });
-  };
-  
-  const isHostelOwner = (req, res, next) => {
-    if (req.session.userId && req.session.userRole === 'hostelOwner') {
-      return next();
-    }
-    return res.status(403).json({ message: 'Access denied. Hostel owner permission required.' });
-  };
-  
-  const isStudent = (req, res, next) => {
-    if (req.session.userId && req.session.userRole === 'student') {
-      return next();
-    }
-    return res.status(403).json({ message: 'Access denied. Student permission required.' });
-  };
-  
-  module.exports = {
-    isAuthenticated,
-    isAdmin,
-    isHostelOwner,
-    isStudent
-  };
+// Check if user is authenticated
+exports.isAuthenticated = (req, res, next) => {
+  if (!req.session.user) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+  next();
+};
+
+// Check if user is a student
+exports.isStudent = (req, res, next) => {
+  if (!req.session.user || req.session.user.role !== 'student') {
+    return res.status(403).json({ message: 'Access denied. Student access required' });
+  }
+  next();
+};
+
+// Check if user is an admin
+exports.isAdmin = (req, res, next) => {
+  if (!req.session.user || req.session.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Access denied. Admin access required' });
+  }
+  next();
+};
