@@ -1,37 +1,37 @@
 "use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function StudentRegistration() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    studentId: '',
-    phoneNumber: '',
-    program: '',
-    level: '',
-    department: '',
-    password: '',
-    confirmPassword: ''
+    name: "",
+    email: "",
+    studentId: "",
+    phoneNumber: "",
+    program: "",
+    level: "",
+    department: "",
+    password: "",
+    confirmPassword: "",
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: null
+        [name]: null,
       }));
     }
   };
@@ -60,7 +60,8 @@ export default function StudentRegistration() {
       newErrors.studentId = "Student ID is required";
       isValid = false;
     } else if (!/^(UGR|UGW)\d{10}$/.test(formData.studentId)) {
-      newErrors.studentId = "Student ID must start with UGR or UGW followed by 10 digits";
+      newErrors.studentId =
+        "Student ID must start with UGR or UGW followed by 10 digits";
       isValid = false;
     }
 
@@ -112,16 +113,16 @@ export default function StudentRegistration() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setIsLoading(true);
-    
+
     try {
-      const response = await fetch('http://localhost:5000/api/auth/signup',  {
-        method: 'POST',
+      const response = await fetch("http://localhost:5000/api/auth/signup", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name: formData.name,
@@ -132,23 +133,23 @@ export default function StudentRegistration() {
           level: formData.level,
           department: formData.department,
           password: formData.password,
-          role: 'student'
+          role: "student",
         }),
         credentials: "include",
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong');
+        throw new Error(data.message || "Something went wrong");
       }
-      
+
       // Success - redirect to login page
-      router.push('/students/signin');
+      router.push("/students/signin");
     } catch (error) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        form: error.message
+        form: error.message,
       }));
     } finally {
       setIsLoading(false);
@@ -162,8 +163,11 @@ export default function StudentRegistration() {
           Create your student account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Or{' '}
-          <Link href="/students/signin" className="font-medium text-blue-600 hover:text-blue-500">
+          Or{" "}
+          <Link
+            href="/students/signin"
+            className="font-medium text-blue-600 hover:text-blue-500"
+          >
             sign in to your existing student account
           </Link>
         </p>
@@ -176,13 +180,16 @@ export default function StudentRegistration() {
               {errors.form}
             </div>
           )}
-          
+
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Left Column */}
               <div className="space-y-6">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Full Name
                   </label>
                   <div className="mt-1">
@@ -193,17 +200,22 @@ export default function StudentRegistration() {
                       autoComplete="name"
                       value={formData.name}
                       onChange={handleChange}
-                      placeholder='Dabie Gorden'
+                      placeholder="Dabie Gorden"
                       className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        errors.name ? 'border-red-300' : 'border-gray-300'
+                        errors.name ? "border-red-300" : "border-gray-300"
                       }`}
                     />
-                    {errors.name && <p className="mt-2 text-sm text-red-600">{errors.name}</p>}
+                    {errors.name && (
+                      <p className="mt-2 text-sm text-red-600">{errors.name}</p>
+                    )}
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Email Address
                   </label>
                   <div className="mt-1">
@@ -215,16 +227,23 @@ export default function StudentRegistration() {
                       value={formData.email}
                       onChange={handleChange}
                       className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        errors.email ? 'border-red-300' : 'border-gray-300'
+                        errors.email ? "border-red-300" : "border-gray-300"
                       }`}
                       placeholder="your.email@example.com"
                     />
-                    {errors.email && <p className="mt-2 text-sm text-red-600">{errors.email}</p>}
+                    {errors.email && (
+                      <p className="mt-2 text-sm text-red-600">
+                        {errors.email}
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="studentId" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="studentId"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Student ID
                   </label>
                   <div className="mt-1">
@@ -235,16 +254,23 @@ export default function StudentRegistration() {
                       value={formData.studentId}
                       onChange={handleChange}
                       className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        errors.studentId ? 'border-red-300' : 'border-gray-300'
+                        errors.studentId ? "border-red-300" : "border-gray-300"
                       }`}
                       placeholder="UGR1234567890"
                     />
-                    {errors.studentId && <p className="mt-2 text-sm text-red-600">{errors.studentId}</p>}
+                    {errors.studentId && (
+                      <p className="mt-2 text-sm text-red-600">
+                        {errors.studentId}
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="program" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="program"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Program of Study
                   </label>
                   <div className="mt-1">
@@ -255,11 +281,15 @@ export default function StudentRegistration() {
                       value={formData.program}
                       onChange={handleChange}
                       className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        errors.program ? 'border-red-300' : 'border-gray-300'
+                        errors.program ? "border-red-300" : "border-gray-300"
                       }`}
                       placeholder="e.g. Computer Science"
                     />
-                    {errors.program && <p className="mt-2 text-sm text-red-600">{errors.program}</p>}
+                    {errors.program && (
+                      <p className="mt-2 text-sm text-red-600">
+                        {errors.program}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -267,7 +297,10 @@ export default function StudentRegistration() {
               {/* Right Column */}
               <div className="space-y-6">
                 <div>
-                  <label htmlFor="level" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="level"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Level
                   </label>
                   <div className="mt-1">
@@ -277,7 +310,7 @@ export default function StudentRegistration() {
                       value={formData.level}
                       onChange={handleChange}
                       className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        errors.level ? 'border-red-300' : 'border-gray-300'
+                        errors.level ? "border-red-300" : "border-gray-300"
                       }`}
                     >
                       <option value="">Select your level</option>
@@ -286,12 +319,19 @@ export default function StudentRegistration() {
                       <option value="300">300</option>
                       <option value="400">400</option>
                     </select>
-                    {errors.level && <p className="mt-2 text-sm text-red-600">{errors.level}</p>}
+                    {errors.level && (
+                      <p className="mt-2 text-sm text-red-600">
+                        {errors.level}
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="department" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="department"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Department
                   </label>
                   <div className="mt-1">
@@ -302,16 +342,23 @@ export default function StudentRegistration() {
                       value={formData.department}
                       onChange={handleChange}
                       className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        errors.department ? 'border-red-300' : 'border-gray-300'
+                        errors.department ? "border-red-300" : "border-gray-300"
                       }`}
                       placeholder="e.g. Computing Sciences"
                     />
-                    {errors.department && <p className="mt-2 text-sm text-red-600">{errors.department}</p>}
+                    {errors.department && (
+                      <p className="mt-2 text-sm text-red-600">
+                        {errors.department}
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="phoneNumber"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Phone Number
                   </label>
                   <div className="mt-1">
@@ -323,16 +370,25 @@ export default function StudentRegistration() {
                       value={formData.phoneNumber}
                       onChange={handleChange}
                       className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        errors.phoneNumber ? 'border-red-300' : 'border-gray-300'
+                        errors.phoneNumber
+                          ? "border-red-300"
+                          : "border-gray-300"
                       }`}
                       placeholder="0200000000"
                     />
-                    {errors.phoneNumber && <p className="mt-2 text-sm text-red-600">{errors.phoneNumber}</p>}
+                    {errors.phoneNumber && (
+                      <p className="mt-2 text-sm text-red-600">
+                        {errors.phoneNumber}
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Password
                   </label>
                   <div className="mt-1">
@@ -343,17 +399,24 @@ export default function StudentRegistration() {
                       autoComplete="new-password"
                       value={formData.password}
                       onChange={handleChange}
-                      placeholder='********'
+                      placeholder="********"
                       className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        errors.password ? 'border-red-300' : 'border-gray-300'
+                        errors.password ? "border-red-300" : "border-gray-300"
                       }`}
                     />
-                    {errors.password && <p className="mt-2 text-sm text-red-600">{errors.password}</p>}
+                    {errors.password && (
+                      <p className="mt-2 text-sm text-red-600">
+                        {errors.password}
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="confirmPassword"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Confirm Password
                   </label>
                   <div className="mt-1">
@@ -364,12 +427,18 @@ export default function StudentRegistration() {
                       autoComplete="new-password"
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      placeholder='********'
+                      placeholder="********"
                       className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
+                        errors.confirmPassword
+                          ? "border-red-300"
+                          : "border-gray-300"
                       }`}
                     />
-                    {errors.confirmPassword && <p className="mt-2 text-sm text-red-600">{errors.confirmPassword}</p>}
+                    {errors.confirmPassword && (
+                      <p className="mt-2 text-sm text-red-600">
+                        {errors.confirmPassword}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -381,11 +450,11 @@ export default function StudentRegistration() {
                 disabled={isLoading}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 cursor-pointer"
               >
-                {isLoading ? 'Creating account...' : 'Sign up'}
+                {isLoading ? "Creating account..." : "Sign up"}
               </button>
             </div>
           </form>
-          
+
           <div className="mt-6">
             <div className="mt-6 flex gap-4">
               <Link
