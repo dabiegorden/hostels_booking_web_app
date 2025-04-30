@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "CUG Hostel booking app",
+  title: "CUHMA",
   description: "Full-stack cug hostel booking app",
 };
 

@@ -172,7 +172,7 @@ const Navbar = () => {
               alt="CUG Logo"
             />
             <span className="font-bold text-xl text-indigo-700">
-              CUG Hostels booking
+              CUHMA
             </span>
           </Link>
         </div>
