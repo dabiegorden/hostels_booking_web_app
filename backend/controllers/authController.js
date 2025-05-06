@@ -1,5 +1,6 @@
 const Student = require('../models/Students');
 const Admin = require('../models/Admin');
+const HostelOwner = require('../models/hostelOwnerSchema');
 
 // Student Registration
 exports.registerStudent = async (req, res) => {
@@ -56,6 +57,54 @@ exports.registerStudent = async (req, res) => {
   }
 };
 
+// Hostel Owner Registration
+// Hostel Owner Registration
+exports.registerHostelOwner = async (req, res) => {
+  try {
+    const {
+      name,
+      email,
+      phoneNumber,
+      businessName,
+      businessAddress,
+      password
+    } = req.body;
+
+    // Check if hostel owner already exists
+    const existingOwner = await HostelOwner.findOne({ email });
+
+    if (existingOwner) {
+      return res.status(400).json({ 
+        message: 'Email already in use'
+      });
+    }
+
+    // Create new hostel owner
+    const hostelOwner = new HostelOwner({
+      name,
+      email,
+      phoneNumber,
+      businessName,
+      businessAddress,
+      password,
+      role: 'hostel-owner',
+      verified: true  // Explicitly set to true
+    });
+
+    await hostelOwner.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Hostel owner registration successful.'  // Removed verification message
+    });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({
+      message: 'Server error during registration'
+    });
+  }
+};
+
 // Student Login
 exports.loginStudent = async (req, res) => {
   try {
@@ -94,6 +143,55 @@ exports.loginStudent = async (req, res) => {
         name: student.name,
         email: student.email,
         role: 'student'
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({
+      message: 'Server error during login'
+    });
+  }
+};
+
+// Hostel Owner Login
+exports.loginHostelOwner = async (req, res) => {
+  try {
+    const { email, password, rememberMe } = req.body;
+
+    // Find hostel owner by email
+    const hostelOwner = await HostelOwner.findOne({ email });
+    if (!hostelOwner) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Verify password
+    const isMatch = await hostelOwner.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Set session
+    req.session.user = {
+      id: hostelOwner._id,
+      role: 'hostel-owner',
+      name: hostelOwner.name,
+      email: hostelOwner.email,
+      businessName: hostelOwner.businessName
+    };
+    
+    // Update cookie expiration if rememberMe is true
+    if (rememberMe) {
+      req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 30; // 30 days
+    }
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: hostelOwner._id,
+        name: hostelOwner.name,
+        email: hostelOwner.email,
+        businessName: hostelOwner.businessName,
+        role: 'hostel-owner'
       }
     });
   } catch (error) {

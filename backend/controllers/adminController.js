@@ -1,6 +1,6 @@
 const Admin = require('../models/Admin');
 const Student = require('../models/Students');
-
+const HostelOwner = require('../models/hostelOwnerSchema');
 // Get all students
 exports.getAllStudents = async (req, res) => {
   try {
@@ -84,3 +84,47 @@ exports.updateStudent = async (req, res) => {
   }
 };
 
+// Get all hostel owners
+exports.getAllHostelOwners = async (req, res) => {
+  try {
+    const hostelOwners = await HostelOwner.find().select('-password');
+    res.status(200).json({ hostelOwners });
+  } catch (error) {
+    console.error('Get all hostel owners error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get hostel owner by ID
+// Get hostel owner by ID
+exports.getHostelOwnerById = async (req, res) => {
+  try {
+    const hostelOwner = await HostelOwner.findById(req.params.id).select('-password');
+    
+    if (!hostelOwner) {
+      return res.status(404).json({ message: 'Hostel owner not found' });
+    }
+    
+    res.status(200).json({ hostelOwner });
+  } catch (error) {
+    console.error('Get hostel owner error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+// Delete hostel owner
+exports.deleteHostelOwner = async (req, res) => {
+  try {
+    const hostelOwner = await HostelOwner.findByIdAndDelete(req.params.id);
+    
+    if (!hostelOwner) {
+      return res.status(404).json({ message: 'Hostel owner not found' });
+    }
+    
+    res.status(200).json({ message: 'Hostel owner deleted successfully' });
+  } catch (error) {
+    console.error('Delete hostel owner error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

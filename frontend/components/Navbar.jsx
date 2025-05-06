@@ -1,28 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import {
-  ChevronDown,
-  Menu,
-  X,
-  Home,
-  Building,
-  Calendar,
-  MapPin,
-  Info,
-  Contact,
-  User,
-  LogIn,
-  UserPlus,
-  Settings,
-  LogOut,
-  GraduationCap,
-  Phone,
-  Mail,
-  BookOpen,
-  School,
-  Clock,
-} from "lucide-react";
+import { ChevronDown, Menu, X, Home, Building, Calendar, MapPin, Info, Contact, User, LogIn, Settings, LogOut, GraduationCap, Phone, Mail, BookOpen, School, Clock, Briefcase, MapPinned } from 'lucide-react';
 import logoImage from "@/public/assets/cug-logo.jpg";
 import Image from "next/image";
 import Link from "next/link";
@@ -32,14 +11,16 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hostelsMenuOpen, setHostelsMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [student, setStudent] = useState(null);
+  const [authMenuOpen, setAuthMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const profileMenuRef = useRef(null);
   const hostelsMenuRef = useRef(null);
+  const authMenuRef = useRef(null);
   const router = useRouter();
 
-  // Check if student is logged in
-  const isLoggedIn = !!student;
+  // Check if user is logged in
+  const isLoggedIn = !!user;
 
   // Fetch current user on component mount
   useEffect(() => {
@@ -55,25 +36,50 @@ const Navbar = () => {
 
         if (response.ok) {
           const data = await response.json();
-          if (data.user && data.user.role === "student") {
-            // Fetch complete student profile if we only have basic session info
-            const profileResponse = await fetch(
-              "http://localhost:5000/api/students/profile",
-              {
-                method: "GET",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                credentials: "include",
-              }
-            );
+          if (data.user) {
+            if (data.user.role === "student") {
+              // Fetch complete student profile if we only have basic session info
+              const profileResponse = await fetch(
+                "http://localhost:5000/api/students/profile",
+                {
+                  method: "GET",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  credentials: "include",
+                }
+              );
 
-            if (profileResponse.ok) {
-              const profileData = await profileResponse.json();
-              setStudent(profileData.student);
-            } else {
-              // If profile fetch fails, use basic session data
-              setStudent(data.user);
+              if (profileResponse.ok) {
+                const profileData = await profileResponse.json();
+                setUser(profileData.student);
+              } else {
+                // If profile fetch fails, use basic session data
+                setUser(data.user);
+              }
+            } else if (data.user.role === "hostel-owner") {
+              // Fetch complete hostel owner profile
+              const profileResponse = await fetch(
+                "http://localhost:5000/api/hostel-owners/profile",
+                {
+                  method: "GET",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  credentials: "include",
+                }
+              );
+
+              if (profileResponse.ok) {
+                const profileData = await profileResponse.json();
+                setUser(profileData.hostelOwner);
+              } else {
+                // If profile fetch fails, use basic session data
+                setUser(data.user);
+              }
+            } else if (data.user.role === "admin") {
+              // For admin users
+              setUser(data.user);
             }
           }
         }
@@ -105,6 +111,14 @@ const Navbar = () => {
       ) {
         setHostelsMenuOpen(false);
       }
+
+      // Close auth menu when clicking outside
+      if (
+        authMenuRef.current &&
+        !authMenuRef.current.contains(event.target)
+      ) {
+        setAuthMenuOpen(false);
+      }
     };
 
     // Add event listener
@@ -130,12 +144,12 @@ const Navbar = () => {
       });
 
       if (response.ok) {
-        // Clear the student state
-        setStudent(null);
+        // Clear the user state
+        setUser(null);
         // Close any open menus
         setProfileMenuOpen(false);
         setMobileMenuOpen(false);
-        // Redirect to home page
+        // Redirect based on user role
         router.push("/students/signin");
       } else {
         console.error("Logout failed");
@@ -156,6 +170,239 @@ const Navbar = () => {
     });
   };
 
+  // Render user profile content based on role
+  const renderProfileContent = () => {
+    if (!user) return null;
+
+    if (user.role === "student") {
+      return (
+        <>
+          <div className="border-b pb-3 mb-3">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-indigo-100 text-indigo-700 p-3 rounded-full">
+                <User className="size-6" />
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900">{user.name}</p>
+                <p className="text-sm text-gray-500">Student</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2 mb-4">
+            <div className="flex items-center gap-2 text-sm">
+              <Mail className="size-4 text-gray-500" />
+              <span className="text-gray-700">{user.email}</span>
+            </div>
+            {user.studentId && (
+              <div className="flex items-center gap-2 text-sm">
+                <GraduationCap className="size-4 text-gray-500" />
+                <span className="text-gray-700">{user.studentId}</span>
+              </div>
+            )}
+            {user.phoneNumber && (
+              <div className="flex items-center gap-2 text-sm">
+                <Phone className="size-4 text-gray-500" />
+                <span className="text-gray-700">{user.phoneNumber}</span>
+              </div>
+            )}
+            {user.program && user.level && (
+              <div className="flex items-center gap-2 text-sm">
+                <BookOpen className="size-4 text-gray-500" />
+                <span className="text-gray-700">
+                  {user.program} - Level {user.level}
+                </span>
+              </div>
+            )}
+            {user.department && (
+              <div className="flex items-center gap-2 text-sm">
+                <School className="size-4 text-gray-500" />
+                <span className="text-gray-700">{user.department}</span>
+              </div>
+            )}
+            {user.createdAt && (
+              <div className="flex items-center gap-2 text-sm">
+                <Clock className="size-4 text-gray-500" />
+                <span className="text-gray-700">
+                  Joined: {formatDate(user.createdAt)}
+                </span>
+              </div>
+            )}
+          </div>
+        </>
+      );
+    } else if (user.role === "hostel-owner") {
+      return (
+        <>
+          <div className="border-b pb-3 mb-3">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-green-100 text-green-700 p-3 rounded-full">
+                <Building className="size-6" />
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900">{user.name}</p>
+                <p className="text-sm text-gray-500">Hostel Owner</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2 mb-4">
+            <div className="flex items-center gap-2 text-sm">
+              <Mail className="size-4 text-gray-500" />
+              <span className="text-gray-700">{user.email}</span>
+            </div>
+            {user.phoneNumber && (
+              <div className="flex items-center gap-2 text-sm">
+                <Phone className="size-4 text-gray-500" />
+                <span className="text-gray-700">{user.phoneNumber}</span>
+              </div>
+            )}
+            {user.businessName && (
+              <div className="flex items-center gap-2 text-sm">
+                <Briefcase className="size-4 text-gray-500" />
+                <span className="text-gray-700">{user.businessName}</span>
+              </div>
+            )}
+            {user.businessAddress && (
+              <div className="flex items-center gap-2 text-sm">
+                <MapPinned className="size-4 text-gray-500" />
+                <span className="text-gray-700">{user.businessAddress}</span>
+              </div>
+            )}
+            {user.createdAt && (
+              <div className="flex items-center gap-2 text-sm">
+                <Clock className="size-4 text-gray-500" />
+                <span className="text-gray-700">
+                  Joined: {formatDate(user.createdAt)}
+                </span>
+              </div>
+            )}
+          </div>
+        </>
+      );
+    } else if (user.role === "admin") {
+      return (
+        <>
+          <div className="border-b pb-3 mb-3">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-red-100 text-red-700 p-3 rounded-full">
+                <Settings className="size-6" />
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900">{user.name}</p>
+                <p className="text-sm text-gray-500">Administrator</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2 mb-4">
+            <div className="flex items-center gap-2 text-sm">
+              <Mail className="size-4 text-gray-500" />
+              <span className="text-gray-700">{user.email}</span>
+            </div>
+          </div>
+        </>
+      );
+    }
+  };
+
+  // Render mobile profile content
+  const renderMobileProfileContent = () => {
+    if (!user) return null;
+
+    if (user.role === "student") {
+      return (
+        <div className="bg-gray-50 rounded-lg p-4 mb-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="bg-indigo-100 text-indigo-700 p-3 rounded-full">
+              <User className="size-6" />
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900">{user.name}</p>
+              <p className="text-sm text-gray-500">{user.email}</p>
+            </div>
+          </div>
+          <div className="space-y-2 text-sm">
+            {user.studentId && (
+              <div className="flex items-center gap-2">
+                <GraduationCap className="size-4 text-gray-500" />
+                <span className="text-gray-700">{user.studentId}</span>
+              </div>
+            )}
+            {user.phoneNumber && (
+              <div className="flex items-center gap-2">
+                <Phone className="size-4 text-gray-500" />
+                <span className="text-gray-700">{user.phoneNumber}</span>
+              </div>
+            )}
+            {user.program && user.level && (
+              <div className="flex items-center gap-2">
+                <BookOpen className="size-4 text-gray-500" />
+                <span className="text-gray-700">
+                  {user.program} - Level {user.level}
+                </span>
+              </div>
+            )}
+            {user.department && (
+              <div className="flex items-center gap-2">
+                <School className="size-4 text-gray-500" />
+                <span className="text-gray-700">{user.department}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    } else if (user.role === "hostel-owner") {
+      return (
+        <div className="bg-gray-50 rounded-lg p-4 mb-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="bg-green-100 text-green-700 p-3 rounded-full">
+              <Building className="size-6" />
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900">{user.name}</p>
+              <p className="text-sm text-gray-500">{user.email}</p>
+            </div>
+          </div>
+          <div className="space-y-2 text-sm">
+            {user.phoneNumber && (
+              <div className="flex items-center gap-2">
+                <Phone className="size-4 text-gray-500" />
+                <span className="text-gray-700">{user.phoneNumber}</span>
+              </div>
+            )}
+            {user.businessName && (
+              <div className="flex items-center gap-2">
+                <Briefcase className="size-4 text-gray-500" />
+                <span className="text-gray-700">{user.businessName}</span>
+              </div>
+            )}
+            {user.businessAddress && (
+              <div className="flex items-center gap-2">
+                <MapPinned className="size-4 text-gray-500" />
+                <span className="text-gray-700">{user.businessAddress}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    } else if (user.role === "admin") {
+      return (
+        <div className="bg-gray-50 rounded-lg p-4 mb-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="bg-red-100 text-red-700 p-3 rounded-full">
+              <Settings className="size-6" />
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900">{user.name}</p>
+              <p className="text-sm text-gray-500">{user.email}</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  };
+
   return (
     <header>
       <nav
@@ -163,9 +410,9 @@ const Navbar = () => {
         aria-label="Global"
       >
         <div className="flex items-center lg:flex-1">
-          <Link href="/" className="-m-1.5 p-1.5 flex items-center">
+          <Link href="/home" className="-m-1.5 p-1.5 flex items-center">
             <Image
-              src={logoImage}
+              src={logoImage || "/placeholder.svg"}
               height={32}
               width={32}
               className="mr-2"
@@ -227,40 +474,6 @@ const Navbar = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm/6 hover:bg-gray-50">
-                    <div className="flex size-11 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white">
-                      <MapPin className="size-6 text-gray-600 group-hover:text-indigo-600" />
-                    </div>
-                    <div className="flex-auto">
-                      <Link
-                        href="/hostels/map"
-                        className="block font-semibold text-gray-900"
-                      >
-                        Map View
-                        <span className="absolute inset-0"></span>
-                      </Link>
-                      <p className="mt-1 text-gray-600">
-                        Find hostels by location
-                      </p>
-                    </div>
-                  </div>
-                  <div className="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm/6 hover:bg-gray-50">
-                    <div className="flex size-11 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white">
-                      <Settings className="size-6 text-gray-600 group-hover:text-indigo-600" />
-                    </div>
-                    <div className="flex-auto">
-                      <Link
-                        href="/hostels/compare"
-                        className="block font-semibold text-gray-900"
-                      >
-                        Compare Hostels
-                        <span className="absolute inset-0"></span>
-                      </Link>
-                      <p className="mt-1 text-gray-600">
-                        Side-by-side comparison of options
-                      </p>
-                    </div>
-                  </div>
                 </div>
               </div>
             )}
@@ -301,78 +514,50 @@ const Navbar = () => {
                 aria-expanded={profileMenuOpen}
                 onClick={() => setProfileMenuOpen(!profileMenuOpen)}
               >
-                <User className="size-4" />
-                {student.name || "Student"}
+                {user.role === "hostel-owner" ? (
+                  <Building className="size-4" />
+                ) : user.role === "admin" ? (
+                  <Settings className="size-4" />
+                ) : (
+                  <User className="size-4" />
+                )}
+                {user.name || "User"}
                 <ChevronDown className="size-5 flex-none text-gray-400" />
               </button>
 
               {profileMenuOpen && (
                 <div className="absolute right-0 z-10 mt-3 w-80 overflow-hidden rounded-3xl bg-white ring-1 shadow-lg ring-gray-900/5">
                   <div className="p-4">
-                    <div className="border-b pb-3 mb-3">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="bg-indigo-100 text-indigo-700 p-3 rounded-full">
-                          <User className="size-6" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">
-                            {student.name}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {student.role || "Student"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center gap-2 text-sm">
-                        <Mail className="size-4 text-gray-500" />
-                        <span className="text-gray-700">{student.email}</span>
-                      </div>
-                      {student.studentId && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <GraduationCap className="size-4 text-gray-500" />
-                          <span className="text-gray-700">
-                            {student.studentId}
-                          </span>
-                        </div>
-                      )}
-                      {student.phoneNumber && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Phone className="size-4 text-gray-500" />
-                          <span className="text-gray-700">
-                            {student.phoneNumber}
-                          </span>
-                        </div>
-                      )}
-                      {student.program && student.level && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <BookOpen className="size-4 text-gray-500" />
-                          <span className="text-gray-700">
-                            {student.program} - Level {student.level}
-                          </span>
-                        </div>
-                      )}
-                      {student.department && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <School className="size-4 text-gray-500" />
-                          <span className="text-gray-700">
-                            {student.department}
-                          </span>
-                        </div>
-                      )}
-                      {student.createdAt && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Clock className="size-4 text-gray-500" />
-                          <span className="text-gray-700">
-                            Joined: {formatDate(student.createdAt)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                    {renderProfileContent()}
 
                     <div className="border-t pt-3 space-y-2">
+                      {user.role === "student" && (
+                        <Link
+                          href="/students/profile"
+                          className="flex items-center gap-2 text-sm/6 font-semibold text-gray-600 hover:text-gray-900 w-full py-2 cursor-pointer"
+                        >
+                          <Settings className="size-4" />
+                          Edit Profile
+                        </Link>
+                      )}
+                      {user.role === "hostel-owner" && (
+                        <Link
+                          href="/hostel-owners/dashboard"
+                          className="flex items-center gap-2 text-sm/6 font-semibold text-gray-600 hover:text-gray-900 w-full py-2 cursor-pointer"
+                        >
+                          <Settings className="size-4" />
+                          Manage Hostels
+                        </Link>
+                      )}
+                      {user.role === "admin" && (
+                        <Link
+                          href="/admin/dashboard"
+                          className="flex items-center gap-2 text-sm/6 font-semibold text-gray-600 hover:text-gray-900 w-full py-2 cursor-pointer"
+                        >
+                          <Settings className="size-4" />
+                          Admin Dashboard
+                        </Link>
+                      )}
                       <button
                         onClick={handleLogout}
                         className="flex items-center gap-2 text-sm/6 font-semibold text-red-600 hover:text-red-700 w-full py-2 cursor-pointer"
@@ -386,13 +571,60 @@ const Navbar = () => {
               )}
             </div>
           ) : (
-            <Link
-              href="/students/signin"
-              className="text-sm/6 font-semibold flex items-center cursor-pointer gap-1 bg-indigo-500 text-white px-3 py-2 rounded-md"
-            >
-              <LogIn className="size-4" />
-              Log in
-            </Link>
+            <div className="relative" ref={authMenuRef}>
+              <button
+                type="button"
+                className="text-sm/6 font-semibold flex items-center cursor-pointer gap-1 bg-indigo-500 text-white px-3 py-2 rounded-md"
+                onClick={() => setAuthMenuOpen(!authMenuOpen)}
+              >
+                <LogIn className="size-4" />
+                Log in
+                <ChevronDown className="size-4 flex-none" />
+              </button>
+
+              {authMenuOpen && (
+                <div className="absolute right-0 z-10 mt-3 w-60 overflow-hidden rounded-xl bg-white ring-1 shadow-lg ring-gray-900/5">
+                  <div className="p-2">
+                    <Link
+                      href="/students/signin"
+                      className="flex items-center gap-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-100 w-full p-2 rounded-md"
+                    >
+                      <GraduationCap className="size-4" />
+                      Student Login
+                    </Link>
+                    <Link
+                      href="/hostel-owners/signin"
+                      className="flex items-center gap-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-100 w-full p-2 rounded-md"
+                    >
+                      <Building className="size-4" />
+                      Hostel Owner Login
+                    </Link>
+                    <Link
+                      href="/admin"
+                      className="flex items-center gap-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-100 w-full p-2 rounded-md"
+                    >
+                      <Settings className="size-4" />
+                      Admin Login
+                    </Link>
+                    <div className="border-t my-1"></div>
+                    <Link
+                      href="/students/signup"
+                      className="flex items-center gap-2 text-sm/6 font-semibold text-indigo-600 hover:bg-gray-100 w-full p-2 rounded-md"
+                    >
+                      <User className="size-4" />
+                      Student Registration
+                    </Link>
+                    <Link
+                      href="/hostel-owners/signup"
+                      className="flex items-center gap-2 text-sm/6 font-semibold text-indigo-600 hover:bg-gray-100 w-full p-2 rounded-md"
+                    >
+                      <Building className="size-4" />
+                      Hostel Owner Registration
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </nav>
@@ -405,7 +637,7 @@ const Navbar = () => {
               <Link href="/" className="-m-1.5 p-1.5 flex items-center">
                 <span className="sr-only">CUG Hostel Booking</span>
                 <Image
-                  src={logoImage}
+                  src={logoImage || "/placeholder.svg"}
                   height={32}
                   width={32}
                   className="mr-2"
@@ -424,59 +656,7 @@ const Navbar = () => {
             </div>
             <div className="mt-6 flow-root">
               <div className="-my-6 divide-y divide-gray-500/10">
-                {!loading && isLoggedIn && (
-                  <div className="py-6">
-                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="bg-indigo-100 text-indigo-700 p-3 rounded-full">
-                          <User className="size-6" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">
-                            {student.name}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {student.email}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="space-y-2 text-sm">
-                        {student.studentId && (
-                          <div className="flex items-center gap-2">
-                            <GraduationCap className="size-4 text-gray-500" />
-                            <span className="text-gray-700">
-                              {student.studentId}
-                            </span>
-                          </div>
-                        )}
-                        {student.phoneNumber && (
-                          <div className="flex items-center gap-2">
-                            <Phone className="size-4 text-gray-500" />
-                            <span className="text-gray-700">
-                              {student.phoneNumber}
-                            </span>
-                          </div>
-                        )}
-                        {student.program && student.level && (
-                          <div className="flex items-center gap-2">
-                            <BookOpen className="size-4 text-gray-500" />
-                            <span className="text-gray-700">
-                              {student.program} - Level {student.level}
-                            </span>
-                          </div>
-                        )}
-                        {student.department && (
-                          <div className="flex items-center gap-2">
-                            <School className="size-4 text-gray-500" />
-                            <span className="text-gray-700">
-                              {student.department}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {!loading && isLoggedIn && renderMobileProfileContent()}
 
                 <div className="space-y-2 py-6">
                   <Link
@@ -554,13 +734,33 @@ const Navbar = () => {
                     <div className="text-sm text-gray-500 p-3">Loading...</div>
                   ) : isLoggedIn ? (
                     <>
-                      <Link
-                        href="/students/profile"
-                        className="-mx-3 flex items-center rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
-                      >
-                        <Settings className="mr-2 size-5" />
-                        Edit Profile
-                      </Link>
+                      {user.role === "student" && (
+                        <Link
+                          href="/students/profile"
+                          className="-mx-3 flex items-center rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
+                        >
+                          <Settings className="mr-2 size-5" />
+                          Edit Profile
+                        </Link>
+                      )}
+                      {user.role === "hostel-owner" && (
+                        <Link
+                          href="/hostel-owners/dashboard"
+                          className="-mx-3 flex items-center rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
+                        >
+                          <Settings className="mr-2 size-5" />
+                          Manage Hostels
+                        </Link>
+                      )}
+                      {user.role === "admin" && (
+                        <Link
+                          href="/admin/dashboard"
+                          className="-mx-3 flex items-center rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
+                        >
+                          <Settings className="mr-2 size-5" />
+                          Admin Dashboard
+                        </Link>
+                      )}
                       <button
                         onClick={handleLogout}
                         className="-mx-3 flex w-full items-center rounded-lg px-3 py-2.5 text-base/7 font-semibold text-red-600 hover:bg-gray-50"
@@ -570,13 +770,49 @@ const Navbar = () => {
                       </button>
                     </>
                   ) : (
-                    <Link
-                      href="/students/signin"
-                      className="-mx-3 flex items-center rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
-                    >
-                      <LogIn className="mr-2 size-5" />
-                      Log in
-                    </Link>
+                    <>
+                      <div className="border-b pb-2 mb-2">
+                        <p className="text-sm font-medium text-gray-500 mb-2">Login as:</p>
+                        <Link
+                          href="/students/signin"
+                          className="-mx-3 flex items-center rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
+                        >
+                          <GraduationCap className="mr-2 size-5" />
+                          Student
+                        </Link>
+                        <Link
+                          href="/hostel-owners/signin"
+                          className="-mx-3 flex items-center rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
+                        >
+                          <Building className="mr-2 size-5" />
+                          Hostel Owner
+                        </Link>
+                        <Link
+                          href="/admin"
+                          className="-mx-3 flex items-center rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
+                        >
+                          <Settings className="mr-2 size-5" />
+                          Admin
+                        </Link>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500 mb-2">Register as:</p>
+                        <Link
+                          href="/students/signup"
+                          className="-mx-3 flex items-center rounded-lg px-3 py-2 text-base/7 font-semibold text-indigo-600 hover:bg-gray-50"
+                        >
+                          <User className="mr-2 size-5" />
+                          Student
+                        </Link>
+                        <Link
+                          href="/hostel-owners/signup"
+                          className="-mx-3 flex items-center rounded-lg px-3 py-2 text-base/7 font-semibold text-indigo-600 hover:bg-gray-50"
+                        >
+                          <Building className="mr-2 size-5" />
+                          Hostel Owner
+                        </Link>
+                      </div>
+                    </>
                   )}
                 </div>
               </div>

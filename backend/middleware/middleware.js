@@ -21,3 +21,11 @@ exports.isAdmin = (req, res, next) => {
   }
   next();
 };
+
+// Check if user is a hostel owner
+exports.isHostelOwner = (req, res, next) => {
+  if (!req.session.user || req.session.user.role !== 'hostel-owner') {
+    return res.status(403).json({ message: 'Access denied. Hostel owner access required' });
+  }
+  next();
+};

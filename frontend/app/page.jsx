@@ -119,7 +119,7 @@ export default function StudentRegistration() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/signup", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -458,15 +458,18 @@ export default function StudentRegistration() {
           <div className="mt-6">
             <div className="mt-6 flex gap-4">
               <Link
+                href="/hostel-owner-registration"
+                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
+              >
+                Hostel Owner Registration
+              </Link>
+              <Link
                 href="/admin"
                 className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
               >
-                Admin login
+                Admin Login
               </Link>
             </div>
-            {/* <div className="mt-4 text-center">
-              <span>Already have an account? <Link className='text-blue-500' href={"/students/signin"}>Login</Link></span>
-          </div> */}
           </div>
         </div>
       </div>
