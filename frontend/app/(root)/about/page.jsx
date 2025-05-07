@@ -1,380 +1,478 @@
-import React from 'react';
-import { Info, Clock, Users, MapPin, Book, Phone, Mail, Shield } from 'lucide-react';
-import {motion} from 'framer-motion';
+"use client";
 
-const About = () => {
-  // Animation variants
-  const fadeIn = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.6 } }
-  };
-  
-  const slideUp = {
-    hidden: { y: 60, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { duration: 0.6 } }
-  };
-  
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2
-      }
-    }
-  };
-  
+import Image from 'next/image';
+import Link from 'next/link';
+
+
+
+import { motion } from "framer-motion";
+
+import hostel1 from '@/public/assets/hostel1_bg.jpeg';
+import hostel2 from '@/public/assets/hostel1_bg.jpeg';
+import hostel3 from '@/public/assets/hostel1_bg.jpeg';
+import hostel4 from '@/public/assets/hostel1_bg.jpeg';
+
+export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <motion.div 
-        initial="hidden"
-        animate="visible"
-        variants={fadeIn}
-        className="bg-blue-900 text-white py-16"
-      >
-        <div className="container mx-auto px-4 md:px-8">
-          <motion.h1 
-            variants={slideUp}
-            className="text-3xl md:text-4xl font-bold mb-4"
-          >
-            About Our Hostel Booking System
-          </motion.h1>
-          <motion.p 
-            variants={slideUp}
-            className="text-lg md:text-xl max-w-3xl"
-          >
-            Simplifying accommodation for students at Catholic University of Ghana, Fiapre.
-          </motion.p>
-        </div>
+     <section>
+        <main className="min-h-screen bg-gray-50">
+              {/* Hero Section */}
+              <motion.div
+                  initial={{ y: 30, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5 }}
+                  // className="max-w-3xl mx-auto"
+                >
+
+            <section className="relative bg-blue-600 text-white py-16 md:py-24">
+              <div className="container mx-auto px-4 max-w-7xl">
+                <div className="flex flex-col md:flex-row items-center">
+                  <div className="md:w-1/2 mb-8 md:mb-0">
+                    <h1 className="text-4xl md:text-5xl font-bold mb-4">About CUG Hostels</h1>
+                    <p className="text-lg md:text-xl opacity-90">
+                      Connecting students with comfortable, affordable, and convenient accommodation options near campus.
+                    </p>
+                  </div>
+                  <div className="md:w-1/2 flex justify-center md:justify-end">
+                    <div className="relative w-72 h-72 rounded-full bg-blue-500 overflow-hidden">
+                      <Image 
+                        src={hostel1}
+                        alt="Student accommodation" 
+                        fill
+                        className="object-cover"
+                        priority
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 h-16 bg-gray-50 clip-path-curve"></div>
+            </section>
       </motion.div>
 
-      {/* Mission Statement */}
-      <motion.div 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={fadeIn}
-        className="container mx-auto px-4 md:px-8 py-12"
+      {/* Our Mission */}
+      <motion.div
+        initial={{ y: 30, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
       >
-        <motion.div 
-          variants={slideUp}
-          className="bg-white rounded-lg shadow-md p-8"
-        >
-          <div className="flex items-center mb-6">
-            <motion.div
-              initial={{ scale: 0 }}
-              whileInView={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            >
-              <Info className="text-blue-700 mr-3" size={28} />
-            </motion.div>
-            <h2 className="text-2xl font-semibold">Our Mission</h2>
+
+      <section className="py-16">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="flex flex-col md:flex-row items-center gap-12">
+            <div className="md:w-1/2">
+              <div className="relative h-96 w-full rounded-xl overflow-hidden shadow-xl">
+                <Image 
+                  src={hostel2}
+                  alt="CUG Campus" 
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            </div>
+            <div className="md:w-1/2">
+              <h2 className="text-3xl font-bold mb-6 text-gray-800">Our Mission</h2>
+              <p className="text-gray-600 mb-4">
+                At CUG Hostels, we believe that comfortable and convenient accommodation is fundamental to academic success. Our mission is to simplify the hostel search and booking process for students while providing hostel owners with an efficient platform to showcase their properties.
+              </p>
+              <p className="text-gray-600">
+                We're committed to building a transparent, reliable, and user-friendly ecosystem that addresses the unique accommodation needs of the CUG community.
+              </p>
+            </div>
           </div>
-          <motion.p 
-            variants={fadeIn}
-            className="text-gray-700 mb-6"
-          >
-            Our mission is to provide a seamless and stress-free hostel booking experience for all students at 
-            Catholic University of Ghana, Fiapre. We strive to make the process of finding and securing 
-            accommodation as simple as possible, so you can focus on your academic journey.
-          </motion.p>
-          
-          <motion.div 
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10"
-          >
-            <motion.div 
-              variants={slideUp}
-              className="bg-blue-50 p-6 rounded-lg"
-              whileHover={{ scale: 1.03 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            >
-              <div className="flex items-center mb-4">
-                <Clock className="text-blue-700 mr-3" size={24} />
-                <h3 className="text-xl font-medium">Quick & Easy Booking</h3>
-              </div>
-              <p className="text-gray-600">
-                Book your preferred hostel in minutes, with real-time availability updates and instant confirmation.
-              </p>
-            </motion.div>
-            
-            <motion.div 
-              variants={slideUp}
-              className="bg-blue-50 p-6 rounded-lg"
-              whileHover={{ scale: 1.03 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            >
-              <div className="flex items-center mb-4">
-                <Users className="text-blue-700 mr-3" size={24} />
-                <h3 className="text-xl font-medium">Student-Centered</h3>
-              </div>
-              <p className="text-gray-600">
-                Designed with student needs in mind, offering affordable options and flexible payment plans.
-              </p>
-            </motion.div>
-            
-            <motion.div 
-              variants={slideUp}
-              className="bg-blue-50 p-6 rounded-lg"
-              whileHover={{ scale: 1.03 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            >
-              <div className="flex items-center mb-4">
-                <MapPin className="text-blue-700 mr-3" size={24} />
-                <h3 className="text-xl font-medium">Strategic Locations</h3>
-              </div>
-              <p className="text-gray-600">
-                All our hostels are strategically located with easy access to campus facilities and amenities.
-              </p>
-            </motion.div>
-            
-            <motion.div 
-              variants={slideUp}
-              className="bg-blue-50 p-6 rounded-lg"
-              whileHover={{ scale: 1.03 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            >
-              <div className="flex items-center mb-4">
-                <Shield className="text-blue-700 mr-3" size={24} />
-                <h3 className="text-xl font-medium">Secure & Reliable</h3>
-              </div>
-              <p className="text-gray-600">
-                Ensuring your data and payments are protected with our secure booking platform.
-              </p>
-            </motion.div>
-          </motion.div>
-        </motion.div>
+        </div>
+      </section>
       </motion.div>
 
       {/* How It Works */}
-      <motion.div 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={fadeIn}
-        className="bg-gray-100 py-12"
+      <motion.div
+        initial={{ y: 30, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
       >
-        <div className="container mx-auto px-4 md:px-8">
-          <motion.div 
-            variants={slideUp}
-            className="mb-10 text-center"
-          >
-            <h2 className="text-2xl font-semibold mb-2">How It Works</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Booking your hostel accommodation is simple with our user-friendly system.
-            </p>
-          </motion.div>
-          
-          <motion.div 
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
-          >
-            <motion.div 
-              variants={slideUp}
-              className="bg-white p-6 rounded-lg shadow-md text-center"
-              whileHover={{ y: -10 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <motion.div 
-                initial={{ scale: 0 }}
-                whileInView={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 260, delay: 0.1 }}
-                className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4"
-              >
-                <span className="text-blue-700 font-bold text-xl">1</span>
-              </motion.div>
-              <h3 className="text-lg font-medium mb-3">Create an Account</h3>
-              <p className="text-gray-600">
-                Sign up using your student ID and email address to access the booking platform.
-              </p>
-            </motion.div>
-            
-            <motion.div 
-              variants={slideUp}
-              className="bg-white p-6 rounded-lg shadow-md text-center"
-              whileHover={{ y: -10 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <motion.div 
-                initial={{ scale: 0 }}
-                whileInView={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 260, delay: 0.3 }}
-                className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4"
-              >
-                <span className="text-blue-700 font-bold text-xl">2</span>
-              </motion.div>
-              <h3 className="text-lg font-medium mb-3">Browse Available Hostels</h3>
-              <p className="text-gray-600">
-                Explore different hostel options, view amenities, and check real-time availability.
-              </p>
-            </motion.div>
-            
-            <motion.div 
-              variants={slideUp}
-              className="bg-white p-6 rounded-lg shadow-md text-center"
-              whileHover={{ y: -10 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <motion.div 
-                initial={{ scale: 0 }}
-                whileInView={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 260, delay: 0.5 }}
-                className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4"
-              >
-                <span className="text-blue-700 font-bold text-xl">3</span>
-              </motion.div>
-              <h3 className="text-lg font-medium mb-3">Book & Pay</h3>
-              <p className="text-gray-600">
-                Select your preferred room, complete the booking process, and make payment securely.
-              </p>
-            </motion.div>
-          </motion.div>
-        </div>
-      </motion.div>
 
-      {/* University Information */}
-      <motion.div 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={fadeIn}
-        className="container mx-auto px-4 md:px-8 py-12"
-      >
-        <motion.div 
-          variants={slideUp}
-          className="bg-white rounded-lg shadow-md p-8"
-        >
-          <div className="flex items-center mb-6">
+      <section className="py-16 bg-gray-100">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <h2 className="text-3xl font-bold mb-12 text-center text-gray-800">How CUG Hostels Works</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* For Students */}
+            <div className="bg-white p-8 rounded-xl shadow-md">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-3 text-gray-800">For Students</h3>
+              <ul className="text-gray-600 space-y-2">
+                <li className="flex items-start">
+                  <svg className="h-5 w-5 text-green-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Search for hostels based on your preferences
+                </li>
+                <li className="flex items-start">
+                  <svg className="h-5 w-5 text-green-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Compare amenities, prices, and locations
+                </li>
+                <li className="flex items-start">
+                  <svg className="h-5 w-5 text-green-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Book and pay securely online
+                </li>
+                <li className="flex items-start">
+                  <svg className="h-5 w-5 text-green-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Access virtual tours and reviews
+                </li>
+              </ul>
+            </div>
+
+            {/* For Hostel Owners */}
             <motion.div
-              initial={{ rotate: -180, opacity: 0 }}
-              whileInView={{ rotate: 0, opacity: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              <Book className="text-blue-700 mr-3" size={28} />
-            </motion.div>
-            <h2 className="text-2xl font-semibold">About Catholic University of Ghana</h2>
+        initial={{ y: 30, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+      >
+
+            <div className="bg-white p-8 rounded-xl shadow-md">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-3 text-gray-800">For Hostel Owners</h3>
+              <ul className="text-gray-600 space-y-2">
+                <li className="flex items-start">
+                  <svg className="h-5 w-5 text-green-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  List your property for free
+                </li>
+                <li className="flex items-start">
+                  <svg className="h-5 w-5 text-green-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Manage room availability and bookings
+                </li>
+                <li className="flex items-start">
+                  <svg className="h-5 w-5 text-green-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Receive secure payments
+                </li>
+                <li className="flex items-start">
+                  <svg className="h-5 w-5 text-green-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Get detailed analytics and insights
+                </li>
+              </ul>
+            </div>
+      </motion.div>
+
+            {/* For Administrators */}
+            <motion.div
+        initial={{ y: 30, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+      >
+
+            <div className="bg-white p-8 rounded-xl shadow-md">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-3 text-gray-800">For University Admin</h3>
+              <ul className="text-gray-600 space-y-2">
+                <li className="flex items-start">
+                  <svg className="h-5 w-5 text-green-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Monitor accommodation availability
+                </li>
+                <li className="flex items-start">
+                  <svg className="h-5 w-5 text-green-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Verify hostel quality and safety
+                </li>
+                <li className="flex items-start">
+                  <svg className="h-5 w-5 text-green-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Access comprehensive reports
+                </li>
+                <li className="flex items-start">
+                  <svg className="h-5 w-5 text-green-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Support student accommodation needs
+                </li>
+              </ul>
+            </div>
+      </motion.div>
           </div>
-          
-          <motion.p 
-            variants={fadeIn}
-            className="text-gray-700 mb-6"
-          >
-            Catholic University of Ghana, Fiapre, is a premier institution dedicated to academic excellence 
-            and holistic education. Established with the vision to provide quality higher education grounded in 
-            Catholic values, the university has grown to become a center of academic excellence in Ghana.
-          </motion.p>
-          
-          <motion.p 
-            variants={fadeIn}
-            className="text-gray-700"
-          >
-            Our campus in Fiapre offers modern facilities, including well-equipped libraries, laboratories, 
-            sports facilities, and comfortable student accommodation. The university is committed to creating 
-            a conducive environment for learning and personal development.
-          </motion.p>
-        </motion.div>
+        </div>
+      </section>
       </motion.div>
 
-      {/* Contact Information */}
-      <motion.div 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={fadeIn}
-        className="bg-blue-900 text-white py-12"
+      {/* Key Features */}
+      <motion.div
+        initial={{ y: 30, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
       >
-        <div className="container mx-auto px-4 md:px-8">
-          <motion.h2 
-            variants={slideUp}
-            className="text-2xl font-semibold mb-8 text-center"
-          >
-            Contact Us
-          </motion.h2>
+
+      <section className="py-16">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <h2 className="text-3xl font-bold mb-12 text-center text-gray-800">What Makes Us Different</h2>
           
-          <motion.div 
-            variants={staggerContainer}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
-          >
-            <motion.div 
-              variants={slideUp}
-              className="flex flex-col items-center text-center"
-              whileHover={{ y: -5 }}
-            >
-              <motion.div
-                initial={{ y: -20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <Phone size={32} className="mb-4" />
-              </motion.div>
-              <h3 className="text-lg font-medium mb-2">Phone</h3>
-              <p>+233 XX XXX XXXX</p>
-              <p>+233 XX XXX XXXX</p>
-            </motion.div>
-            
-            <motion.div 
-              variants={slideUp}
-              className="flex flex-col items-center text-center"
-              whileHover={{ y: -5 }}
-            >
-              <motion.div
-                initial={{ y: -20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                transition={{ type: "spring", stiffness: 300, delay: 0.2 }}
-              >
-                <Mail size={32} className="mb-4" />
-              </motion.div>
-              <h3 className="text-lg font-medium mb-2">Email</h3>
-              <p>hostels@cug.edu.gh</p>
-              <p>support@cughostels.edu.gh</p>
-            </motion.div>
-            
-            <motion.div 
-              variants={slideUp}
-              className="flex flex-col items-center text-center"
-              whileHover={{ y: -5 }}
-            >
-              <motion.div
-                initial={{ y: -20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                transition={{ type: "spring", stiffness: 300, delay: 0.4 }}
-              >
-                <MapPin size={32} className="mb-4" />
-              </motion.div>
-              <h3 className="text-lg font-medium mb-2">Address</h3>
-              <p>Catholic University of Ghana</p>
-              <p>Fiapre, Sunyani, Ghana</p>
-            </motion.div>
-          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Feature 1 */}
+            <div className="p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">Advanced Search</h3>
+              <p className="text-gray-600">
+                Find the perfect hostel with our powerful search filters by location, price, amenities, and more.
+              </p>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">Virtual Tours</h3>
+              <p className="text-gray-600">
+                Explore hostels remotely with 360° virtual tours before making your booking decision.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">Secure Payments</h3>
+              <p className="text-gray-600">
+                Pay securely via Paystack with support for multiple payment methods including mobile money.
+              </p>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">Flexible Bookings</h3>
+              <p className="text-gray-600">
+                Book accommodations for a semester, monthly, or even shorter stays based on your needs.
+              </p>
+            </div>
+          </div>
         </div>
+      </section>
       </motion.div>
 
-      {/* Footer */}
-      <motion.footer 
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 1 }}
-        className="bg-gray-800 text-white py-6"
+      {/* Team/Founders Section */}
+      <motion.div
+        initial={{ y: 30, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
       >
-        <div className="container mx-auto px-4 md:px-8 text-center">
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            © {new Date().getFullYear()} Catholic University of Ghana Hostel Booking System. All rights reserved.
-          </motion.p>
+
+      <section className="py-16 bg-gray-100">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <h2 className="text-3xl font-bold mb-12 text-center text-gray-800">Meet Our Team</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Team Member 1 */}
+            <div className="bg-white p-6 rounded-xl shadow-md text-center">
+              <div className="w-32 h-32 mx-auto rounded-full overflow-hidden mb-4">
+                <Image 
+                  src={hostel3}
+                  alt="Team Member" 
+                  width={128}
+                  height={128}
+                  className="object-cover"
+                />
+              </div>
+              <h3 className="text-xl font-semibold mb-1 text-gray-800">Alex Johnson</h3>
+              <p className="text-blue-600 mb-3">Founder & CEO</p>
+              <p className="text-gray-600">
+                Alex is a CUG alumnus who experienced firsthand the challenges of finding quality student accommodation.
+              </p>
+            </div>
+
+            {/* Team Member 2 */}
+            <div className="bg-white p-6 rounded-xl shadow-md text-center">
+              <div className="w-32 h-32 mx-auto rounded-full overflow-hidden mb-4">
+                <Image 
+                  src={hostel4}
+                  alt="Team Member" 
+                  width={128}
+                  height={128}
+                  className="object-cover"
+                />
+              </div>
+              <h3 className="text-xl font-semibold mb-1 text-gray-800">Sarah Mensah</h3>
+              <p className="text-blue-600 mb-3">CTO</p>
+              <p className="text-gray-600">
+                Sarah leads our technical team, ensuring the platform provides a seamless experience for all users.
+              </p>
+            </div>
+
+            {/* Team Member 3 */}
+            <div className="bg-white p-6 rounded-xl shadow-md text-center">
+              <div className="w-32 h-32 mx-auto rounded-full overflow-hidden mb-4">
+                <Image 
+                  src={hostel1}
+                  alt="Team Member" 
+                  width={128}
+                  height={128}
+                  className="object-cover"
+                />
+              </div>
+              <h3 className="text-xl font-semibold mb-1 text-gray-800">David Asamoah</h3>
+              <p className="text-blue-600 mb-3">Operations Manager</p>
+              <p className="text-gray-600">
+                David oversees day-to-day operations and builds relationships with hostel owners and university partners.
+              </p>
+            </div>
+          </div>
         </div>
-      </motion.footer>
-    </div>
+      </section>
+      </motion.div>
+
+      {/* CTA Section */}
+      <motion.div
+        initial={{ y: 30, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+      >
+
+      <section className="py-16 bg-blue-600 text-white">
+        <div className="container mx-auto px-4 max-w-7xl text-center">
+          <h2 className="text-3xl font-bold mb-6">Ready to Find Your Perfect Hostel?</h2>
+          <p className="text-xl mb-8 max-w-3xl mx-auto">
+            Join thousands of CUG students who have found their ideal accommodation through our platform.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/hostels" className="px-8 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors">
+              Browse Hostels
+            </Link>
+            <Link href="/" className="px-8 py-3 bg-blue-700 text-white font-semibold rounded-lg hover:bg-blue-800 transition-colors">
+              Sign Up Today
+            </Link>
+          </div>
+        </div>
+      </section>
+      </motion.div>
+
+      {/* FAQ Section */}
+      <motion.div
+        initial={{ y: 30, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+      >
+
+      <section className="py-16">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <h2 className="text-3xl font-bold mb-12 text-center text-gray-800">Frequently Asked Questions</h2>
+          
+          <div className="max-w-3xl mx-auto space-y-6">
+            {/* FAQ Item 1 */}
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">How do I book a hostel?</h3>
+              <p className="text-gray-600">
+                Browse available hostels, select your preferred room type, choose your dates, and proceed to payment. Once payment is confirmed, you'll receive a booking confirmation.
+              </p>
+            </div>
+
+            {/* FAQ Item 2 */}
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">What payment methods are accepted?</h3>
+              <p className="text-gray-600">
+                We accept various payment methods through Paystack, including credit/debit cards and mobile money options like MTN Mobile Money, Vodafone Cash, and AirtelTigo Money.
+              </p>
+            </div>
+
+            {/* FAQ Item 3 */}
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">Can I cancel my booking?</h3>
+              <p className="text-gray-600">
+                Cancellation policies vary by hostel. You can find specific cancellation terms on each hostel's page before booking. Most hostels offer free cancellation up to 7 days before check-in.
+              </p>
+            </div>
+
+            {/* FAQ Item 4 */}
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">How do I list my hostel on the platform?</h3>
+              <p className="text-gray-600">
+                If you're a hostel owner, you can register as a hostel owner, submit your property details for verification, and start managing your listings once approved.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      </motion.div>
+
+      {/* CTA Section */}
+            <section className="py-16 bg-indigo-600">
+              <div className="max-w-7xl mx-auto px-4 text-center">
+                <motion.div
+                  initial={{ y: 30, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5 }}
+                  className="max-w-3xl mx-auto"
+                >
+                  <h2 className="text-3xl font-bold text-white mb-4">
+                    Ready to find your perfect CUG hostel?
+                  </h2>
+                  <p className="text-indigo-100 mb-8 text-lg">
+                    Join hundreds of students who have found their ideal accommodation
+                    through our platform.
+                  </p>
+                  <Link href="/">
+                    <button className="bg-white text-indigo-600 hover:bg-indigo-50 font-bold py-3 px-8 rounded-md text-lg transition mr-4">
+                      Sign Up Now
+                    </button>
+                  </Link>
+                  <Link href="/hostels">
+                    <button className="bg-transparent text-white border-2 border-white hover:bg-white hover:text-indigo-600 font-bold py-3 px-8 rounded-md text-lg transition">
+                      Browse Hostels
+                    </button>
+                  </Link>
+                </motion.div>
+              </div>
+            </section>
+    </main>
+     </section>
   );
-};
-
-export default About;
+}

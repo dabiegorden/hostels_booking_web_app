@@ -1,6 +1,9 @@
 const Admin = require('../models/Admin');
 const Student = require('../models/Students');
 const HostelOwner = require('../models/hostelOwnerSchema');
+const Hostel = require('../models/Hostel'); // Assuming you have a Hostel model
+
+// ==================== STUDENT MANAGEMENT ====================
 // Get all students
 exports.getAllStudents = async (req, res) => {
   try {
@@ -28,18 +31,63 @@ exports.getStudentById = async (req, res) => {
   }
 };
 
-// Delete student
-exports.deleteStudent = async (req, res) => {
+// Create student (admin can create student accounts)
+exports.createStudent = async (req, res) => {
   try {
-    const student = await Student.findByIdAndDelete(req.params.id);
-    
-    if (!student) {
-      return res.status(404).json({ message: 'Student not found' });
+    const {
+      name,
+      email,
+      studentId,
+      phoneNumber,
+      program,
+      level,
+      department,
+      password
+    } = req.body;
+
+    // Check if student already exists
+    const existingStudent = await Student.findOne({ 
+      $or: [{ email }, { studentId }]
+    });
+
+    if (existingStudent) {
+      return res.status(400).json({ 
+        message: existingStudent.email === email 
+          ? 'Email already in use' 
+          : 'Student ID already registered' 
+      });
     }
-    
-    res.status(200).json({ message: 'Student deleted successfully' });
+
+    // Create new student
+    const student = new Student({
+      name,
+      email,
+      studentId,
+      phoneNumber,
+      program,
+      level,
+      department,
+      password,
+      role: 'student'
+    });
+
+    await student.save();
+
+    res.status(201).json({
+      message: 'Student created successfully',
+      student: {
+        id: student._id,
+        name: student.name,
+        email: student.email,
+        studentId: student.studentId,
+        phoneNumber: student.phoneNumber,
+        program: student.program,
+        level: student.level,
+        department: student.department
+      }
+    });
   } catch (error) {
-    console.error('Delete student error:', error);
+    console.error('Create student error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -84,6 +132,23 @@ exports.updateStudent = async (req, res) => {
   }
 };
 
+// Delete student
+exports.deleteStudent = async (req, res) => {
+  try {
+    const student = await Student.findByIdAndDelete(req.params.id);
+    
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    
+    res.status(200).json({ message: 'Student deleted successfully' });
+  } catch (error) {
+    console.error('Delete student error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ==================== HOSTEL OWNER MANAGEMENT ====================
 // Get all hostel owners
 exports.getAllHostelOwners = async (req, res) => {
   try {
@@ -95,7 +160,6 @@ exports.getAllHostelOwners = async (req, res) => {
   }
 };
 
-// Get hostel owner by ID
 // Get hostel owner by ID
 exports.getHostelOwnerById = async (req, res) => {
   try {
@@ -112,6 +176,94 @@ exports.getHostelOwnerById = async (req, res) => {
   }
 };
 
+// Create hostel owner
+exports.createHostelOwner = async (req, res) => {
+  try {
+    const {
+      name,
+      email,
+      phoneNumber,
+      businessName,
+      businessAddress,
+      password
+    } = req.body;
+
+    // Check if hostel owner already exists
+    const existingOwner = await HostelOwner.findOne({ email });
+
+    if (existingOwner) {
+      return res.status(400).json({ 
+        message: 'Email already in use'
+      });
+    }
+
+    // Create new hostel owner
+    const hostelOwner = new HostelOwner({
+      name,
+      email,
+      phoneNumber,
+      businessName,
+      businessAddress,
+      password,
+      role: 'hostel-owner',
+      verified: true
+    });
+
+    await hostelOwner.save();
+
+    res.status(201).json({
+      message: 'Hostel owner created successfully',
+      hostelOwner: {
+        id: hostelOwner._id,
+        name: hostelOwner.name,
+        email: hostelOwner.email,
+        phoneNumber: hostelOwner.phoneNumber,
+        businessName: hostelOwner.businessName,
+        businessAddress: hostelOwner.businessAddress
+      }
+    });
+  } catch (error) {
+    console.error('Create hostel owner error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Update hostel owner
+exports.updateHostelOwner = async (req, res) => {
+  try {
+    const { name, email, phoneNumber, businessName, businessAddress } = req.body;
+    
+    const hostelOwner = await HostelOwner.findById(req.params.id);
+    
+    if (!hostelOwner) {
+      return res.status(404).json({ message: 'Hostel owner not found' });
+    }
+    
+    // Update fields
+    hostelOwner.name = name || hostelOwner.name;
+    hostelOwner.email = email || hostelOwner.email;
+    hostelOwner.phoneNumber = phoneNumber || hostelOwner.phoneNumber;
+    hostelOwner.businessName = businessName || hostelOwner.businessName;
+    hostelOwner.businessAddress = businessAddress || hostelOwner.businessAddress;
+    
+    await hostelOwner.save();
+    
+    res.status(200).json({
+      message: 'Hostel owner updated successfully',
+      hostelOwner: {
+        id: hostelOwner._id,
+        name: hostelOwner.name,
+        email: hostelOwner.email,
+        phoneNumber: hostelOwner.phoneNumber,
+        businessName: hostelOwner.businessName,
+        businessAddress: hostelOwner.businessAddress
+      }
+    });
+  } catch (error) {
+    console.error('Update hostel owner error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
 // Delete hostel owner
 exports.deleteHostelOwner = async (req, res) => {
@@ -122,9 +274,177 @@ exports.deleteHostelOwner = async (req, res) => {
       return res.status(404).json({ message: 'Hostel owner not found' });
     }
     
-    res.status(200).json({ message: 'Hostel owner deleted successfully' });
+    // Also delete all hostels owned by this owner
+    await Hostel.deleteMany({ owner: req.params.id });
+    
+    res.status(200).json({ message: 'Hostel owner and associated hostels deleted successfully' });
   } catch (error) {
     console.error('Delete hostel owner error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ==================== HOSTEL MANAGEMENT (ADMIN) ====================
+// Get all hostels
+exports.getAllHostels = async (req, res) => {
+  try {
+    const hostels = await Hostel.find().populate('owner', 'name businessName');
+    res.status(200).json({ hostels });
+  } catch (error) {
+    console.error('Get all hostels error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get hostel by ID
+exports.getHostelById = async (req, res) => {
+  try {
+    const hostel = await Hostel.findById(req.params.id).populate('owner', 'name businessName');
+    
+    if (!hostel) {
+      return res.status(404).json({ message: 'Hostel not found' });
+    }
+    
+    res.status(200).json({ hostel });
+  } catch (error) {
+    console.error('Get hostel error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Create hostel (admin can create hostels for any owner)
+exports.createHostel = async (req, res) => {
+  try {
+    const {
+      name,
+      description,
+      address,
+      location,
+      owner,
+      images,
+      amenities,
+      policies
+    } = req.body;
+
+    // Check if owner exists
+    const hostelOwner = await HostelOwner.findById(owner);
+    if (!hostelOwner) {
+      return res.status(404).json({ message: 'Hostel owner not found' });
+    }
+
+    // Create new hostel
+    const hostel = new Hostel({
+      name,
+      description,
+      address,
+      location,
+      owner,
+      images,
+      amenities,
+      policies,
+      verified: true
+    });
+
+    await hostel.save();
+
+    res.status(201).json({
+      message: 'Hostel created successfully',
+      hostel: {
+        id: hostel._id,
+        name: hostel.name,
+        address: hostel.address,
+        owner: hostel.owner
+      }
+    });
+  } catch (error) {
+    console.error('Create hostel error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Update hostel
+exports.updateHostel = async (req, res) => {
+  try {
+    const {
+      name,
+      description,
+      address,
+      location,
+      images,
+      amenities,
+      policies,
+      verified
+    } = req.body;
+    
+    const hostel = await Hostel.findById(req.params.id);
+    
+    if (!hostel) {
+      return res.status(404).json({ message: 'Hostel not found' });
+    }
+    
+    // Update fields
+    hostel.name = name || hostel.name;
+    hostel.description = description || hostel.description;
+    hostel.address = address || hostel.address;
+    if (location) hostel.location = location;
+    if (images) hostel.images = images;
+    if (amenities) hostel.amenities = amenities;
+    hostel.policies = policies || hostel.policies;
+    if (verified !== undefined) hostel.verified = verified;
+    
+    await hostel.save();
+    
+    res.status(200).json({
+      message: 'Hostel updated successfully',
+      hostel: {
+        id: hostel._id,
+        name: hostel.name,
+        address: hostel.address,
+        verified: hostel.verified
+      }
+    });
+  } catch (error) {
+    console.error('Update hostel error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Delete hostel
+exports.deleteHostel = async (req, res) => {
+  try {
+    const hostel = await Hostel.findByIdAndDelete(req.params.id);
+    
+    if (!hostel) {
+      return res.status(404).json({ message: 'Hostel not found' });
+    }
+    
+    // Also delete all rooms associated with this hostel
+    // Assuming you have a Room model
+    // await Room.deleteMany({ hostelId: req.params.id });
+    
+    res.status(200).json({ message: 'Hostel deleted successfully' });
+  } catch (error) {
+    console.error('Delete hostel error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Admin dashboard stats
+exports.getDashboardStats = async (req, res) => {
+  try {
+    const studentCount = await Student.countDocuments();
+    const hostelOwnerCount = await HostelOwner.countDocuments();
+    const hostelCount = await Hostel.countDocuments();
+    
+    res.status(200).json({
+      stats: {
+        students: studentCount,
+        hostelOwners: hostelOwnerCount,
+        hostels: hostelCount
+      }
+    });
+  } catch (error) {
+    console.error('Dashboard stats error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

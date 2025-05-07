@@ -435,7 +435,7 @@ const Navbar = () => {
         </div>
         <div className="hidden lg:flex lg:gap-x-12">
           <Link
-            href="/"
+            href="/home"
             className="text-sm/6 font-semibold text-gray-900 flex items-center gap-1"
           >
             <Home className="size-4" />
@@ -586,14 +586,14 @@ const Navbar = () => {
                 <div className="absolute right-0 z-10 mt-3 w-60 overflow-hidden rounded-xl bg-white ring-1 shadow-lg ring-gray-900/5">
                   <div className="p-2">
                     <Link
-                      href="/students/signin"
+                      href="/students"
                       className="flex items-center gap-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-100 w-full p-2 rounded-md"
                     >
                       <GraduationCap className="size-4" />
                       Student Login
                     </Link>
                     <Link
-                      href="/hostel-owners/signin"
+                      href="/hostel-owner-login"
                       className="flex items-center gap-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-100 w-full p-2 rounded-md"
                     >
                       <Building className="size-4" />
@@ -608,14 +608,14 @@ const Navbar = () => {
                     </Link>
                     <div className="border-t my-1"></div>
                     <Link
-                      href="/students/signup"
+                      href="/"
                       className="flex items-center gap-2 text-sm/6 font-semibold text-indigo-600 hover:bg-gray-100 w-full p-2 rounded-md"
                     >
                       <User className="size-4" />
                       Student Registration
                     </Link>
                     <Link
-                      href="/hostel-owners/signup"
+                      href="/hostel-owner-registration"
                       className="flex items-center gap-2 text-sm/6 font-semibold text-indigo-600 hover:bg-gray-100 w-full p-2 rounded-md"
                     >
                       <Building className="size-4" />
@@ -640,7 +640,7 @@ const Navbar = () => {
                   src={logoImage || "/placeholder.svg"}
                   height={32}
                   width={32}
-                  className="mr-2"
+                  className="mr-2 rounded-full"
                   alt="CUG Logo"
                 />
                 <span className="font-bold text-indigo-700">CUG Hostels</span>

@@ -49,3 +49,40 @@ body {
     @apply bg-background text-foreground;
   }
 } */
+
+
+.clip-path-curve {
+  clip-path: ellipse(50% 100% at 50% 100%);
+}
+
+/* Animation styles for hover effects */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.hover-pulse:hover {
+  animation: pulse 1s infinite;
+}
+
+/* Additional utility classes */
+.text-shadow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Responsive typography */
+@media (max-width: 640px) {
+  h1 {
+    font-size: 2.25rem !important;
+  }
+  h2 {
+    font-size: 1.75rem !important;
+  }
+}
