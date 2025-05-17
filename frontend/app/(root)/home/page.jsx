@@ -7,12 +7,11 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { MapPin, Search, Star, Calendar } from "lucide-react";
 
-// Import images - you'll need to add these to your project
-// These are placeholder paths - adjust based on your project structure
-import hostelImage1 from "@/public/assets/hostel1_bg.jpeg";
-import hostelImage2 from "@/public/assets/hostel2_bg.jpeg";
-import hostelImage3 from "@/public/assets/hostel3_bg.jpeg";
-import hostelImage4 from "@/public/assets/hostel4_bg.jpeg";
+
+import hostelImage4 from "@/public/assets/hostel1.jpeg";
+import hostelImage5 from "@/public/assets/hostel2.jpeg";
+import hostelImage6 from "@/public/assets/hostel3.jpeg";
+
 
 // Define styles for various elements
 const slideStyle = {
@@ -44,7 +43,7 @@ const overlayStyle = {
 // Carousel data with images, captions, descriptions and CTA text
 const carouselData = [
   {
-    image: hostelImage1,
+    image: hostelImage4,
     caption: "Find Your Perfect CUG Hostel",
     description:
       "Discover comfortable and affordable accommodations around Catholic University of Ghana, Fiapre",
@@ -52,7 +51,7 @@ const carouselData = [
     ctaLink: "/hostels",
   },
   {
-    image: hostelImage2,
+    image: hostelImage5,
     caption: "Student Friendly Accommodations",
     description:
       "Secure, convenient, and budget-friendly hostel options for CUG students",
@@ -60,15 +59,7 @@ const carouselData = [
     ctaLink: "/hostels",
   },
   {
-    image: hostelImage3,
-    caption: "Book Your Room Today",
-    description:
-      "Easy booking process with mobile money payment options via Paystack",
-    ctaText: "Start Booking",
-    ctaLink: "/bookings",
-  },
-  {
-    image: hostelImage4,
+    image: hostelImage6,
     caption: "Hostel Owners Welcome",
     description:
       "List your property and reach students from Catholic University of Ghana",
@@ -194,7 +185,7 @@ const Homepage = () => {
               <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
                 <div className="relative h-48">
                   <Image
-                    src={hostelImage3}
+                    src={hostelImage5}
                     alt="Hostel Preview"
                     fill
                     className="object-cover"
@@ -231,7 +222,7 @@ const Homepage = () => {
               <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
                 <div className="relative h-48">
                   <Image
-                    src={hostelImage2}
+                    src={hostelImage6}
                     alt="Hostel Preview"
                     fill
                     className="object-cover"
@@ -263,43 +254,7 @@ const Homepage = () => {
                   </Link>
                 </div>
               </div>
-
-              {/* Featured Hostel Card 3 */}
-              <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-                <div className="relative h-48">
-                  <Image
-                    src={hostelImage4}
-                    alt="Hostel Preview"
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute top-2 right-2 bg-white py-1 px-2 rounded-md text-sm font-medium flex items-center">
-                    <Star className="text-yellow-400 mr-1" size={16} />
-                    4.5
-                  </div>
-                </div>
-                <div className="p-5">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-xl font-bold text-gray-900">
-                      Scholars Haven
-                    </h3>
-                    <p className="text-indigo-600 font-bold">₵750/mo</p>
-                  </div>
-                  <p className="text-gray-500 text-sm mb-3 flex items-center">
-                    <MapPin size={16} className="mr-1 text-gray-400" />
-                    15 mins from campus
-                  </p>
-                  <p className="text-gray-700 mb-4">
-                    Budget-friendly accommodation with essential amenities and
-                    friendly staff.
-                  </p>
-                  <Link href="/hostels/scholars-haven">
-                    <button className="w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-medium py-2 px-4 rounded transition">
-                      View Details
-                    </button>
-                  </Link>
-                </div>
-              </div>
+              {/* Featured Hostel Card will be render here */}
             </div>
 
             <div className="text-center mt-10">

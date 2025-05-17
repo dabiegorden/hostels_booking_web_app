@@ -57,7 +57,68 @@ exports.registerStudent = async (req, res) => {
   }
 };
 
-// Hostel Owner Registration
+
+
+// Get session information
+exports.getSessionInfo = (req, res) => {
+  if (!req.session || !req.session.user) {
+    return res.status(200).json({
+      isAuthenticated: false,
+      user: null,
+    })
+  }
+
+  // Return user info without sensitive data
+  const user = {
+    id: req.session.user._id || req.session.user.id,
+    role: req.session.user.role,
+    name: req.session.user.name,
+    email: req.session.user.email,
+  }
+
+  return res.status(200).json({
+    isAuthenticated: true,
+    user,
+  })
+}
+
+// Fix for login function - ensure both id and _id are set
+exports.loginUser = async (req, res) => {
+  try {
+    const { email, password, role } = req.body
+
+    // Your existing login code...
+    const user = await User.findOne({ email }) // Assuming you have a User model
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" })
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password)
+
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: "Invalid credentials" })
+    }
+
+    // When setting the session, ensure both id and _id are set
+    req.session.user = {
+      id: user._id, // Set both formats of ID
+      _id: user._id,
+      role: user.role,
+      name: user.name,
+      email: user.email,
+      // Other user properties...
+    }
+
+    return res.status(200).json({ message: "Login successful" })
+    // Rest of your login code...
+  } catch (error) {
+    console.error("Login error:", error)
+    res.status(500).json({ message: "Server error" })
+  }
+}
+
+
 // Hostel Owner Registration
 exports.registerHostelOwner = async (req, res) => {
   try {

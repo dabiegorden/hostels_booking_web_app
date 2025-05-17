@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Search, MapPin, Star, Filter, Grid, List, Wifi, Coffee, Tv, Snowflake, Utensils } from 'lucide-react';
 
-export default function HostelsListingPage() {
+const HostelsList = () => {
   const [viewMode, setViewMode] = useState('grid');
   
   // Sample data - in a real application this would come from your API
@@ -210,3 +210,5 @@ export default function HostelsListingPage() {
     </div>
   );
 }
+
+export default HostelsList;

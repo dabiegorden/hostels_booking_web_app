@@ -14,7 +14,7 @@ const roomSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    enum: ['single', 'double', 'triple', 'quad', 'shared', 'other']
+    enum: ['1 in 1', '2 in 1', '3 in 1', '4 in 1', 'other']
   },
   description: {
     type: String,

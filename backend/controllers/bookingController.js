@@ -230,11 +230,23 @@ exports.getBookingsByStudent = async (req, res) => {
 }
 
 // Get bookings by hostel ID (for hostel owners)
+// Fix for the getBookingsByHostel function
 exports.getBookingsByHostel = async (req, res) => {
   try {
     const hostelId = req.params.hostelId
 
-    // Verify hostel belongs to the logged-in hostel owner
+    // Debug session info
+    // console.log("Booking request session:", {
+    //   user: req.session.user
+    //     ? {
+    //         id: req.session.user.id,
+    //         _id: req.session.user._id,
+    //         role: req.session.user.role,
+    //       }
+    //     : null,
+    // })
+
+    // Verify hostel exists
     const hostel = await Hostel.findById(hostelId)
 
     if (!hostel) {
@@ -244,7 +256,24 @@ exports.getBookingsByHostel = async (req, res) => {
       })
     }
 
-    if (req.session.user.role !== "admin" && hostel.owner.toString() !== req.session.user._id.toString()) {
+    // Debug hostel owner info
+    // console.log("Hostel owner:", hostel.owner)
+
+    // More flexible authorization check
+    const isAuthorized =
+      req.session.user.role === "admin" ||
+      (hostel.owner &&
+        req.session.user &&
+        ((req.session.user._id && hostel.owner.toString() === req.session.user._id.toString()) ||
+          (req.session.user.id && hostel.owner.toString() === req.session.user.id.toString())))
+
+    if (!isAuthorized) {
+      console.log("Authorization failed:", {
+        userRole: req.session.user.role,
+        userId: req.session.user._id || req.session.user.id,
+        hostelOwner: hostel.owner,
+      })
+
       return res.status(403).json({
         success: false,
         message: "Not authorized to view bookings for this hostel",
@@ -252,8 +281,8 @@ exports.getBookingsByHostel = async (req, res) => {
     }
 
     const bookings = await Booking.find({ hostel: hostelId })
+      .populate("room", "name type price")
       .populate("student", "name email studentId")
-      .populate("room", "roomNumber type price")
 
     res.status(200).json({
       success: true,
@@ -269,6 +298,8 @@ exports.getBookingsByHostel = async (req, res) => {
     })
   }
 }
+
+
 
 // Get booking statistics (admin only)
 exports.getBookingStats = async (req, res) => {

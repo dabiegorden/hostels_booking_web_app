@@ -30,7 +30,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, MoreHorizontal, Search, Edit, Trash, Eye, MapPin } from "lucide-react"
 import { toast } from "sonner"
 
-export default function HostelsPage() {
+const HostelsPage = () => {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [hostels, setHostels] = useState([])
@@ -1012,3 +1012,5 @@ export default function HostelsPage() {
     </div>
   )
 }
+
+export default HostelsPage;

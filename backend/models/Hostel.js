@@ -18,12 +18,6 @@ const hostelSchema = new mongoose.Schema({
   location: {
     type: {
       type: String,
-      enum: ["Point"],
-      default: "Point",
-    },
-    coordinates: {
-      type: [Number],
-      required: true,
     },
   },
   owner: {
@@ -43,6 +37,7 @@ const hostelSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
+
   verified: {
     type: Boolean,
     default: false,
@@ -57,36 +52,7 @@ const hostelSchema = new mongoose.Schema({
       ref: "Review",
     },
   ],
-  // Price fields
-  basePrice: {
-    type: Number,
-    required: true,
-    default: 0,
-  },
-  priceRange: {
-    min: {
-      type: Number,
-      default: 0,
-    },
-    max: {
-      type: Number,
-      default: 0,
-    },
-  },
-  discountRate: {
-    type: Number,
-    default: 0,
-    min: 0,
-    max: 100,
-  },
-  pricingNotes: {
-    type: String,
-    default: "",
-  },
-  currency: {
-    type: String,
-    default: "GHS",
-  },
+
   createdAt: {
     type: Date,
     default: Date.now,

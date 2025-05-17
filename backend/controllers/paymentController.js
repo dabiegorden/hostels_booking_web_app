@@ -200,12 +200,25 @@ exports.getPaymentsByStudent = async (req, res) => {
   }
 }
 
-// Get payments by hostel ID (for hostel owners)
+
+// Fix for the getPaymentsByHostel function
+// Fix for the getPaymentsByHostel function
 exports.getPaymentsByHostel = async (req, res) => {
   try {
     const hostelId = req.params.hostelId
 
-    // Verify hostel belongs to the logged-in hostel owner
+    // Debug session info
+    // console.log("Payment request session:", {
+    //   user: req.session.user
+    //     ? {
+    //         id: req.session.user.id,
+    //         _id: req.session.user._id,
+    //         role: req.session.user.role,
+    //       }
+    //     : null,
+    // })
+
+    // Verify hostel exists
     const hostel = await Hostel.findById(hostelId)
 
     if (!hostel) {
@@ -215,7 +228,24 @@ exports.getPaymentsByHostel = async (req, res) => {
       })
     }
 
-    if (req.session.user.role !== "admin" && hostel.owner.toString() !== req.session.user._id.toString()) {
+    // Debug hostel owner info
+    // console.log("Hostel owner:", hostel.owner)
+
+    // More flexible authorization check
+    const isAuthorized =
+      req.session.user.role === "admin" ||
+      (hostel.owner &&
+        req.session.user &&
+        ((req.session.user._id && hostel.owner.toString() === req.session.user._id.toString()) ||
+          (req.session.user.id && hostel.owner.toString() === req.session.user.id.toString())))
+
+    if (!isAuthorized) {
+      console.log("Authorization failed:", {
+        userRole: req.session.user.role,
+        userId: req.session.user._id || req.session.user.id,
+        hostelOwner: hostel.owner,
+      })
+
       return res.status(403).json({
         success: false,
         message: "Not authorized to view payments for this hostel",
@@ -223,7 +253,7 @@ exports.getPaymentsByHostel = async (req, res) => {
     }
 
     const payments = await Payment.find({ hostel: hostelId })
-      .populate("booking", "bookingStatus duration totalAmount")
+      .populate("booking")
       .populate("student", "name email studentId")
 
     res.status(200).json({
@@ -240,6 +270,7 @@ exports.getPaymentsByHostel = async (req, res) => {
     })
   }
 }
+
 
 // Get payment statistics (admin only)
 exports.getPaymentStats = async (req, res) => {

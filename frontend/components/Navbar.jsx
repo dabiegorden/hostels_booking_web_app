@@ -1,26 +1,47 @@
-"use client";
+"use client"
 
-import React, { useState, useEffect, useRef } from "react";
-import { ChevronDown, Menu, X, Home, Building, Calendar, MapPin, Info, Contact, User, LogIn, Settings, LogOut, GraduationCap, Phone, Mail, BookOpen, School, Clock, Briefcase, MapPinned } from 'lucide-react';
-import logoImage from "@/public/assets/cug-logo.jpg";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef } from "react"
+import {
+  ChevronDown,
+  Menu,
+  X,
+  Home,
+  Building,
+  Calendar,
+  Info,
+  Contact,
+  User,
+  LogIn,
+  Settings,
+  LogOut,
+  GraduationCap,
+  Phone,
+  Mail,
+  BookOpen,
+  School,
+  Clock,
+  Briefcase,
+  MapPinned,
+} from "lucide-react"
+import logoImage from "@/public/assets/cug-logo.jpg"
+import Image from "next/image"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 const Navbar = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [hostelsMenuOpen, setHostelsMenuOpen] = useState(false);
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [authMenuOpen, setAuthMenuOpen] = useState(false);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const profileMenuRef = useRef(null);
-  const hostelsMenuRef = useRef(null);
-  const authMenuRef = useRef(null);
-  const router = useRouter();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [hostelsMenuOpen, setHostelsMenuOpen] = useState(false)
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const [authMenuOpen, setAuthMenuOpen] = useState(false)
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const profileMenuRef = useRef(null)
+  const hostelsMenuRef = useRef(null)
+  const authMenuRef = useRef(null)
+  const router = useRouter()
 
   // Check if user is logged in
-  const isLoggedIn = !!user;
+  const isLoggedIn = !!user
 
   // Fetch current user on component mount
   useEffect(() => {
@@ -32,107 +53,92 @@ const Navbar = () => {
             "Content-Type": "application/json",
           },
           credentials: "include", // Important for sending cookies
-        });
+        })
 
         if (response.ok) {
-          const data = await response.json();
+          const data = await response.json()
           if (data.user) {
             if (data.user.role === "student") {
               // Fetch complete student profile if we only have basic session info
-              const profileResponse = await fetch(
-                "http://localhost:5000/api/students/profile",
-                {
-                  method: "GET",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  credentials: "include",
-                }
-              );
+              const profileResponse = await fetch("http://localhost:5000/api/students/profile", {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                credentials: "include",
+              })
 
               if (profileResponse.ok) {
-                const profileData = await profileResponse.json();
-                setUser(profileData.student);
+                const profileData = await profileResponse.json()
+                setUser(profileData.student)
               } else {
                 // If profile fetch fails, use basic session data
-                setUser(data.user);
+                setUser(data.user)
               }
             } else if (data.user.role === "hostel-owner") {
               // Fetch complete hostel owner profile
-              const profileResponse = await fetch(
-                "http://localhost:5000/api/hostel-owners/profile",
-                {
-                  method: "GET",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  credentials: "include",
-                }
-              );
+              const profileResponse = await fetch("http://localhost:5000/api/hostel-owners/profile", {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                credentials: "include",
+              })
 
               if (profileResponse.ok) {
-                const profileData = await profileResponse.json();
-                setUser(profileData.hostelOwner);
+                const profileData = await profileResponse.json()
+                setUser(profileData.hostelOwner)
               } else {
                 // If profile fetch fails, use basic session data
-                setUser(data.user);
+                setUser(data.user)
               }
             } else if (data.user.role === "admin") {
               // For admin users
-              setUser(data.user);
+              setUser(data.user)
             }
           }
         }
       } catch (error) {
-        console.error("Error fetching current user:", error);
+        console.error("Error fetching current user:", error)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchCurrentUser();
-  }, []);
+    fetchCurrentUser()
+  }, [])
 
   // Handle click outside to close menus
   useEffect(() => {
     const handleClickOutside = (event) => {
       // Close profile menu when clicking outside
-      if (
-        profileMenuRef.current &&
-        !profileMenuRef.current.contains(event.target)
-      ) {
-        setProfileMenuOpen(false);
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setProfileMenuOpen(false)
       }
 
       // Close hostels menu when clicking outside
-      if (
-        hostelsMenuRef.current &&
-        !hostelsMenuRef.current.contains(event.target)
-      ) {
-        setHostelsMenuOpen(false);
+      if (hostelsMenuRef.current && !hostelsMenuRef.current.contains(event.target)) {
+        setHostelsMenuOpen(false)
       }
 
       // Close auth menu when clicking outside
-      if (
-        authMenuRef.current &&
-        !authMenuRef.current.contains(event.target)
-      ) {
-        setAuthMenuOpen(false);
+      if (authMenuRef.current && !authMenuRef.current.contains(event.target)) {
+        setAuthMenuOpen(false)
       }
-    };
+    }
 
     // Add event listener
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside)
 
     // Clean up
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
 
   // Implement logout functionality
   const handleLogout = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
     try {
       const response = await fetch("http://localhost:5000/api/auth/logout", {
@@ -141,38 +147,38 @@ const Navbar = () => {
           "Content-Type": "application/json",
         },
         credentials: "include",
-      });
+      })
 
       if (response.ok) {
         // Clear the user state
-        setUser(null);
+        setUser(null)
         // Close any open menus
-        setProfileMenuOpen(false);
-        setMobileMenuOpen(false);
-        // Redirect based on user role
-        router.push("/students/signin");
+        setProfileMenuOpen(false)
+        setMobileMenuOpen(false)
+        // Redirect to login page
+        router.push("/auth")
       } else {
-        console.error("Logout failed");
+        console.error("Logout failed")
       }
     } catch (error) {
-      console.error("Error during logout:", error);
+      console.error("Error during logout:", error)
     }
-  };
+  }
 
   // Format date for display
   const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
+    if (!dateString) return ""
+    const date = new Date(dateString)
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
-    });
-  };
+    })
+  }
 
   // Render user profile content based on role
   const renderProfileContent = () => {
-    if (!user) return null;
+    if (!user) return null
 
     if (user.role === "student") {
       return (
@@ -223,14 +229,12 @@ const Navbar = () => {
             {user.createdAt && (
               <div className="flex items-center gap-2 text-sm">
                 <Clock className="size-4 text-gray-500" />
-                <span className="text-gray-700">
-                  Joined: {formatDate(user.createdAt)}
-                </span>
+                <span className="text-gray-700">Joined: {formatDate(user.createdAt)}</span>
               </div>
             )}
           </div>
         </>
-      );
+      )
     } else if (user.role === "hostel-owner") {
       return (
         <>
@@ -272,14 +276,12 @@ const Navbar = () => {
             {user.createdAt && (
               <div className="flex items-center gap-2 text-sm">
                 <Clock className="size-4 text-gray-500" />
-                <span className="text-gray-700">
-                  Joined: {formatDate(user.createdAt)}
-                </span>
+                <span className="text-gray-700">Joined: {formatDate(user.createdAt)}</span>
               </div>
             )}
           </div>
         </>
-      );
+      )
     } else if (user.role === "admin") {
       return (
         <>
@@ -302,13 +304,13 @@ const Navbar = () => {
             </div>
           </div>
         </>
-      );
+      )
     }
-  };
+  }
 
   // Render mobile profile content
   const renderMobileProfileContent = () => {
-    if (!user) return null;
+    if (!user) return null
 
     if (user.role === "student") {
       return (
@@ -351,7 +353,7 @@ const Navbar = () => {
             )}
           </div>
         </div>
-      );
+      )
     } else if (user.role === "hostel-owner") {
       return (
         <div className="bg-gray-50 rounded-lg p-4 mb-4">
@@ -385,7 +387,7 @@ const Navbar = () => {
             )}
           </div>
         </div>
-      );
+      )
     } else if (user.role === "admin") {
       return (
         <div className="bg-gray-50 rounded-lg p-4 mb-4">
@@ -399,9 +401,9 @@ const Navbar = () => {
             </div>
           </div>
         </div>
-      );
+      )
     }
-  };
+  }
 
   return (
     <header>
@@ -411,16 +413,8 @@ const Navbar = () => {
       >
         <div className="flex items-center lg:flex-1">
           <Link href="/home" className="-m-1.5 p-1.5 flex items-center">
-            <Image
-              src={logoImage || "/placeholder.svg"}
-              height={32}
-              width={32}
-              className="mr-2"
-              alt="CUG Logo"
-            />
-            <span className="font-bold text-xl text-indigo-700">
-              CUHMA
-            </span>
+            <Image src={logoImage || "/placeholder.svg"} height={32} width={32} className="mr-2" alt="CUG Logo" />
+            <span className="font-bold text-xl text-indigo-700">CUHMA</span>
           </Link>
         </div>
         <div className="flex lg:hidden">
@@ -434,10 +428,7 @@ const Navbar = () => {
           </button>
         </div>
         <div className="hidden lg:flex lg:gap-x-12">
-          <Link
-            href="/home"
-            className="text-sm/6 font-semibold text-gray-900 flex items-center gap-1"
-          >
+          <Link href="/home" className="text-sm/6 font-semibold text-gray-900 flex items-center gap-1">
             <Home className="size-4" />
             Home
           </Link>
@@ -451,54 +442,15 @@ const Navbar = () => {
             >
               <Building className="size-4" />
               Hostels
-              <ChevronDown className="size-5 flex-none text-gray-400" />
             </button>
-
-            {hostelsMenuOpen && (
-              <div className="absolute top-full -left-8 z-10 mt-3 w-screen max-w-md overflow-hidden rounded-3xl bg-white ring-1 shadow-lg ring-gray-900/5">
-                <div className="p-4">
-                  <div className="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm/6 hover:bg-gray-50">
-                    <div className="flex size-11 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white">
-                      <Building className="size-6 text-gray-600 group-hover:text-indigo-600" />
-                    </div>
-                    <div className="flex-auto">
-                      <Link
-                        href="/hostels"
-                        className="block font-semibold text-gray-900"
-                      >
-                        Browse All Hostels
-                        <span className="absolute inset-0"></span>
-                      </Link>
-                      <p className="mt-1 text-gray-600">
-                        View all available accommodations
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
-          <Link
-            href="/bookings"
-            className="text-sm/6 font-semibold text-gray-900 flex items-center gap-1"
-          >
-            <Calendar className="size-4" />
-            Bookings
-          </Link>
-
-          <Link
-            href="/about"
-            className="text-sm/6 font-semibold text-gray-900 flex items-center gap-1"
-          >
+          <Link href="/about" className="text-sm/6 font-semibold text-gray-900 flex items-center gap-1">
             <Info className="size-4" />
             About
           </Link>
 
-          <Link
-            href="/contact"
-            className="text-sm/6 font-semibold text-gray-900 flex items-center gap-1"
-          >
+          <Link href="/contact" className="text-sm/6 font-semibold text-gray-900 flex items-center gap-1">
             <Contact className="size-4" />
             Contact
           </Link>
@@ -542,7 +494,7 @@ const Navbar = () => {
                       )}
                       {user.role === "hostel-owner" && (
                         <Link
-                          href="/hostel-owners/dashboard"
+                          href="/hostel-owners-dashboard"
                           className="flex items-center gap-2 text-sm/6 font-semibold text-gray-600 hover:text-gray-900 w-full py-2 cursor-pointer"
                         >
                           <Settings className="size-4" />
@@ -586,21 +538,21 @@ const Navbar = () => {
                 <div className="absolute right-0 z-10 mt-3 w-60 overflow-hidden rounded-xl bg-white ring-1 shadow-lg ring-gray-900/5">
                   <div className="p-2">
                     <Link
-                      href="/students"
+                      href="/auth"
                       className="flex items-center gap-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-100 w-full p-2 rounded-md"
                     >
                       <GraduationCap className="size-4" />
                       Student Login
                     </Link>
                     <Link
-                      href="/hostel-owner-login"
+                      href="/auth"
                       className="flex items-center gap-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-100 w-full p-2 rounded-md"
                     >
                       <Building className="size-4" />
                       Hostel Owner Login
                     </Link>
                     <Link
-                      href="/admin"
+                      href="/auth"
                       className="flex items-center gap-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-100 w-full p-2 rounded-md"
                     >
                       <Settings className="size-4" />
@@ -608,18 +560,11 @@ const Navbar = () => {
                     </Link>
                     <div className="border-t my-1"></div>
                     <Link
-                      href="/"
+                      href="/auth"
                       className="flex items-center gap-2 text-sm/6 font-semibold text-indigo-600 hover:bg-gray-100 w-full p-2 rounded-md"
                     >
                       <User className="size-4" />
-                      Student Registration
-                    </Link>
-                    <Link
-                      href="/hostel-owner-registration"
-                      className="flex items-center gap-2 text-sm/6 font-semibold text-indigo-600 hover:bg-gray-100 w-full p-2 rounded-md"
-                    >
-                      <Building className="size-4" />
-                      Hostel Owner Registration
+                      Register
                     </Link>
                   </div>
                 </div>
@@ -681,28 +626,6 @@ const Navbar = () => {
                       </div>
                       <ChevronDown className="size-5 flex-none" />
                     </button>
-                    {hostelsMenuOpen && (
-                      <div className="mt-2 space-y-2" id="disclosure-1">
-                        <Link
-                          href="/hostels"
-                          className="block rounded-lg py-2 pr-3 pl-6 text-sm/7 font-semibold text-gray-900 hover:bg-gray-50"
-                        >
-                          Browse All Hostels
-                        </Link>
-                        <Link
-                          href="/hostels/map"
-                          className="block rounded-lg py-2 pr-3 pl-6 text-sm/7 font-semibold text-gray-900 hover:bg-gray-50"
-                        >
-                          Map View
-                        </Link>
-                        <Link
-                          href="/hostels/compare"
-                          className="block rounded-lg py-2 pr-3 pl-6 text-sm/7 font-semibold text-gray-900 hover:bg-gray-50"
-                        >
-                          Compare Hostels
-                        </Link>
-                      </div>
-                    )}
                   </div>
 
                   <Link
@@ -774,21 +697,21 @@ const Navbar = () => {
                       <div className="border-b pb-2 mb-2">
                         <p className="text-sm font-medium text-gray-500 mb-2">Login as:</p>
                         <Link
-                          href="/students/signin"
+                          href="/auth"
                           className="-mx-3 flex items-center rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
                         >
                           <GraduationCap className="mr-2 size-5" />
                           Student
                         </Link>
                         <Link
-                          href="/hostel-owners/signin"
+                          href="/auth"
                           className="-mx-3 flex items-center rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
                         >
                           <Building className="mr-2 size-5" />
                           Hostel Owner
                         </Link>
                         <Link
-                          href="/admin"
+                          href="/auth"
                           className="-mx-3 flex items-center rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
                         >
                           <Settings className="mr-2 size-5" />
@@ -798,14 +721,14 @@ const Navbar = () => {
                       <div>
                         <p className="text-sm font-medium text-gray-500 mb-2">Register as:</p>
                         <Link
-                          href="/students/signup"
+                          href="/auth"
                           className="-mx-3 flex items-center rounded-lg px-3 py-2 text-base/7 font-semibold text-indigo-600 hover:bg-gray-50"
                         >
                           <User className="mr-2 size-5" />
                           Student
                         </Link>
                         <Link
-                          href="/hostel-owners/signup"
+                          href="/auth"
                           className="-mx-3 flex items-center rounded-lg px-3 py-2 text-base/7 font-semibold text-indigo-600 hover:bg-gray-50"
                         >
                           <Building className="mr-2 size-5" />
@@ -821,7 +744,7 @@ const Navbar = () => {
         </div>
       )}
     </header>
-  );
-};
+  )
+}
 
-export default Navbar;
+export default Navbar
