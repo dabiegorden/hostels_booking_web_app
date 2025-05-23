@@ -10,8 +10,7 @@ export default function ContactPage() {
     name: '',
     email: '',
     subject: '',
-    message: '',
-    userType: 'student'
+    message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
@@ -45,8 +44,7 @@ export default function ContactPage() {
         name: '',
         email: '',
         subject: '',
-        message: '',
-        userType: 'student'
+        message: ''
       });
       
       // Clear success message after 5 seconds
@@ -148,45 +146,6 @@ export default function ContactPage() {
               )}
 
               <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-md">
-                <div className="mb-6">
-                  <label htmlFor="userType" className="block text-gray-700 font-medium mb-2">I am a:</label>
-                  <div className="flex flex-wrap gap-4">
-                    <label className="inline-flex items-center">
-                      <input 
-                        type="radio" 
-                        name="userType" 
-                        value="student" 
-                        checked={formData.userType === 'student'}
-                        onChange={handleChange}
-                        className="form-radio h-5 w-5 text-blue-600"
-                      />
-                      <span className="ml-2 text-gray-700">Student</span>
-                    </label>
-                    <label className="inline-flex items-center">
-                      <input 
-                        type="radio" 
-                        name="userType" 
-                        value="hostelOwner" 
-                        checked={formData.userType === 'hostelOwner'}
-                        onChange={handleChange}
-                        className="form-radio h-5 w-5 text-blue-600"
-                      />
-                      <span className="ml-2 text-gray-700">Hostel Owner</span>
-                    </label>
-                    <label className="inline-flex items-center">
-                      <input 
-                        type="radio" 
-                        name="userType" 
-                        value="other" 
-                        checked={formData.userType === 'other'}
-                        onChange={handleChange}
-                        className="form-radio h-5 w-5 text-blue-600"
-                      />
-                      <span className="ml-2 text-gray-700">Other</span>
-                    </label>
-                  </div>
-                </div>
-
                 <div className="mb-6">
                   <label htmlFor="name" className="block text-gray-700 font-medium mb-2">Full Name</label>
                   <input 
