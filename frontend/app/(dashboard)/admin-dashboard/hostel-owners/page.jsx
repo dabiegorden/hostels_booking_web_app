@@ -1,72 +1,33 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/context/AuthContext"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Plus, MoreHorizontal, Search, Edit, Trash, Eye } from "lucide-react"
 import { toast } from "sonner"
+import { User, Search, Plus, Edit, Trash2, Mail, Phone, Building, Loader2 } from "lucide-react"
+import Link from "next/link"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
-export default function HostelOwnersPage() {
-  const { user, loading } = useAuth()
-  const router = useRouter()
+export default function HostelOwners() {
   const [hostelOwners, setHostelOwners] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [openCreateDialog, setOpenCreateDialog] = useState(false)
-  const [openEditDialog, setOpenEditDialog] = useState(false)
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
-  const [openViewDialog, setOpenViewDialog] = useState(false)
-  const [currentHostelOwner, setCurrentHostelOwner] = useState(null)
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phoneNumber: "",
-    businessName: "",
-    businessAddress: "",
-    password: "",
-  })
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [ownerToDelete, setOwnerToDelete] = useState(null)
 
   useEffect(() => {
-    // Redirect if not authenticated or not an admin
-    if (!loading && (!user || user.role !== "admin")) {
-      toast({
-        title: "Access Denied",
-        description: "You must be an admin to view this page.",
-        variant: "destructive",
-      })
-      router.push("/auth/login")
-    } else if (!loading && user) {
-      // Fetch hostel owners
-      fetchHostelOwners()
-    }
-  }, [user, loading, router, toast])
+    fetchHostelOwners()
+  }, [])
 
   const fetchHostelOwners = async () => {
     try {
-      setIsLoading(true)
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/hostel-owners`, {
+      setLoading(true)
+      const response = await fetch("http://localhost:5000/api/admin/hostel-owners", {
         credentials: "include",
       })
 
@@ -75,470 +36,229 @@ export default function HostelOwnersPage() {
       }
 
       const data = await response.json()
-      setHostelOwners(data.hostelOwners)
+      setHostelOwners(data.hostelOwners || [])
     } catch (error) {
       console.error("Error fetching hostel owners:", error)
-      toast({
-        title: "Error",
-        description: "Failed to load hostel owners.",
-        variant: "destructive",
-      })
+      toast.error("Failed to load hostel owners")
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+  const handleDeleteClick = (owner) => {
+    setOwnerToDelete(owner)
+    setShowDeleteModal(true)
   }
 
-  const handleCreateHostelOwner = async (e) => {
-    e.preventDefault()
+  const handleDeleteConfirm = async () => {
+    if (!ownerToDelete) return
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/hostel-owners`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+      const response = await fetch(`http://localhost:5000/api/admin/hostel-owners/${ownerToDelete._id}`, {
+        method: "DELETE",
         credentials: "include",
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to create hostel owner")
+        throw new Error("Failed to delete hostel owner")
       }
 
-      toast({
-        title: "Success",
-        description: "Hostel owner created successfully.",
-      })
-
-      setOpenCreateDialog(false)
-      setFormData({
-        name: "",
-        email: "",
-        phoneNumber: "",
-        businessName: "",
-        businessAddress: "",
-        password: "",
-      })
-      fetchHostelOwners()
-    } catch (error) {
-      console.error("Error creating hostel owner:", error)
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create hostel owner.",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const handleEditHostelOwner = async (e) => {
-    e.preventDefault()
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/hostel-owners/${currentHostelOwner._id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-          credentials: "include",
-        },
-      )
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to update hostel owner")
-      }
-
-      toast({
-        title: "Success",
-        description: "Hostel owner updated successfully.",
-      })
-
-      setOpenEditDialog(false)
-      fetchHostelOwners()
-    } catch (error) {
-      console.error("Error updating hostel owner:", error)
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update hostel owner.",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const handleDeleteHostelOwner = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/hostel-owners/${currentHostelOwner._id}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        },
-      )
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to delete hostel owner")
-      }
-
-      toast({
-        title: "Success",
-        description: "Hostel owner deleted successfully.",
-      })
-
-      setOpenDeleteDialog(false)
-      fetchHostelOwners()
+      toast.success("Hostel owner deleted successfully")
+      setHostelOwners(hostelOwners.filter((o) => o._id !== ownerToDelete._id))
     } catch (error) {
       console.error("Error deleting hostel owner:", error)
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete hostel owner.",
-        variant: "destructive",
-      })
+      toast.error("Failed to delete hostel owner")
+    } finally {
+      setShowDeleteModal(false)
+      setOwnerToDelete(null)
     }
   }
 
-  const handleViewHostelOwner = (hostelOwner) => {
-    setCurrentHostelOwner(hostelOwner)
-    setOpenViewDialog(true)
-  }
-
-  const handleEditClick = (hostelOwner) => {
-    setCurrentHostelOwner(hostelOwner)
-    setFormData({
-      name: hostelOwner.name,
-      email: hostelOwner.email,
-      phoneNumber: hostelOwner.phoneNumber,
-      businessName: hostelOwner.businessName,
-      businessAddress: hostelOwner.businessAddress,
-      // Don't set password for editing
-    })
-    setOpenEditDialog(true)
-  }
-
-  const handleDeleteClick = (hostelOwner) => {
-    setCurrentHostelOwner(hostelOwner)
-    setOpenDeleteDialog(true)
-  }
-
-  const filteredHostelOwners = hostelOwners.filter((hostelOwner) => {
-    const searchTermLower = searchTerm.toLowerCase()
-    return (
-      hostelOwner.name.toLowerCase().includes(searchTermLower) ||
-      hostelOwner.email.toLowerCase().includes(searchTermLower) ||
-      hostelOwner.businessName.toLowerCase().includes(searchTermLower) ||
-      hostelOwner.businessAddress.toLowerCase().includes(searchTermLower)
-    )
-  })
-
-  if (loading || isLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
+  const filteredOwners = hostelOwners.filter(
+    (owner) =>
+      owner.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      owner.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      owner.businessName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      owner.businessAddress?.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Hostel Owners</h1>
-          <p className="text-muted-foreground">Manage hostel owner accounts and information</p>
-        </div>
-        <Dialog open={openCreateDialog} onOpenChange={setOpenCreateDialog}>
-          <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Add Hostel Owner
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Add New Hostel Owner</DialogTitle>
-              <DialogDescription>Create a new hostel owner account. All fields are required.</DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleCreateHostelOwner} className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input id="name" name="name" value={formData.name} onChange={handleInputChange} required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="phoneNumber">Phone Number</Label>
-                  <Input
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="businessName">Business Name</Label>
-                  <Input
-                    id="businessName"
-                    name="businessName"
-                    value={formData.businessName}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="businessAddress">Business Address</Label>
-                <Input
-                  id="businessAddress"
-                  name="businessAddress"
-                  value={formData.businessAddress}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setOpenCreateDialog(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">Create Hostel Owner</Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+    <div className="p-4 md:p-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+        <h1 className="text-2xl font-bold flex items-center">
+          <User className="mr-2 h-6 w-6" />
+          Manage Hostel Owners
+        </h1>
+        <Link
+          href="/admin-dashboard/hostel-owners/create"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Add New Hostel Owner
+        </Link>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search hostel owners..."
-            className="pl-8"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      <div className="bg-white rounded-xl shadow-sm mb-6">
+        <div className="p-4 border-b">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <input
+              type="text"
+              placeholder="Search hostel owners by name, email, business name or address..."
+              className="pl-10 pr-4 py-2 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
-      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Hostel Owners List</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Business Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Phone Number</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredHostelOwners.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center items-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+          </div>
+        ) : filteredOwners.length === 0 ? (
+          <div className="text-center p-8 text-gray-500">No hostel owners found</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                    {searchTerm ? "No hostel owners found matching your search." : "No hostel owners found."}
-                  </TableCell>
+                  <TableHead className="w-[250px] min-w-[200px]">Owner</TableHead>
+                  <TableHead className="hidden md:table-cell min-w-[200px]">Contact</TableHead>
+                  <TableHead className="min-w-[180px]">Business</TableHead>
+                  <TableHead className="hidden lg:table-cell w-[100px]">Status</TableHead>
+                  <TableHead className="text-right w-[100px]">Actions</TableHead>
                 </TableRow>
-              ) : (
-                filteredHostelOwners.map((hostelOwner) => (
-                  <TableRow key={hostelOwner._id}>
-                    <TableCell className="font-medium">{hostelOwner.name}</TableCell>
-                    <TableCell>{hostelOwner.businessName}</TableCell>
-                    <TableCell>{hostelOwner.email}</TableCell>
-                    <TableCell>{hostelOwner.phoneNumber}</TableCell>
+              </TableHeader>
+              <TableBody>
+                {filteredOwners.map((owner) => (
+                  <TableRow key={owner._id} className="hover:bg-gray-50">
+                    <TableCell>
+                      <div className="flex items-center min-w-0">
+                        <div className="h-10 w-10 flex-shrink-0 bg-purple-100 rounded-full flex items-center justify-center">
+                          <span className="text-purple-600 font-medium text-sm">
+                            {owner.name?.charAt(0).toUpperCase() || "O"}
+                          </span>
+                        </div>
+                        <div className="ml-3 min-w-0 flex-1">
+                          <div className="text-sm font-medium text-gray-900 truncate">
+                            {owner.name}
+                          </div>
+                          <div className="text-sm text-gray-500 truncate">
+                            ID: {owner._id.substring(0, 8)}...
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    
+                    <TableCell className="hidden md:table-cell">
+                      <div className="space-y-1">
+                        <div className="text-sm text-gray-900 flex items-center">
+                          <Mail className="h-3 w-3 mr-1 text-gray-400 flex-shrink-0" />
+                          <span className="truncate">{owner.email}</span>
+                        </div>
+                        <div className="text-sm text-gray-500 flex items-center">
+                          <Phone className="h-3 w-3 mr-1 text-gray-400 flex-shrink-0" />
+                          <span className="truncate">{owner.phoneNumber}</span>
+                        </div>
+                      </div>
+                    </TableCell>
+                    
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="flex items-center">
+                          <Building className="h-3 w-3 mr-1 text-gray-400 flex-shrink-0" />
+                          <div className="text-sm text-gray-900 truncate">{owner.businessName}</div>
+                        </div>
+                        {/* <div className="text-sm text-gray-500 truncate">{owner.businessAddress}</div> */}
+                        <div className="lg:hidden">
+                          {owner.verified ? (
+                            <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                              Verified
+                            </span>
+                          ) : (
+                            <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                              Pending
+                            </span>
+                          )}
+                        </div>
+                        <div className="md:hidden mt-2 space-y-1">
+                          <div className="text-xs text-gray-600 flex items-center">
+                            <Mail className="h-3 w-3 mr-1 text-gray-400" />
+                            <span className="truncate">{owner.email}</span>
+                          </div>
+                          <div className="text-xs text-gray-600 flex items-center">
+                            <Phone className="h-3 w-3 mr-1 text-gray-400" />
+                            <span className="truncate">{owner.phoneNumber}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    
+                    <TableCell className="hidden lg:table-cell">
+                      {owner.verified ? (
+                        <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                          Verified
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                          Pending
+                        </span>
+                      )}
+                    </TableCell>
+                    
                     <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Actions</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleViewHostelOwner(hostelOwner)}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditClick(hostelOwner)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDeleteClick(hostelOwner)} className="text-red-600">
-                            <Trash className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div className="flex justify-end space-x-1">
+                        <Link
+                          href={`/admin-dashboard/hostel-owners/${owner._id}/edit`}
+                          className="text-amber-600 hover:text-amber-900 p-1 hover:bg-amber-50 rounded"
+                          title="Edit"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Link>
+                        <button
+                          onClick={() => handleDeleteClick(owner)}
+                          className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
+                          title="Delete"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </div>
 
-      {/* View Hostel Owner Dialog */}
-      <Dialog open={openViewDialog} onOpenChange={setOpenViewDialog}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Hostel Owner Details</DialogTitle>
-          </DialogHeader>
-          {currentHostelOwner && (
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Name</p>
-                  <p>{currentHostelOwner.name}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Email</p>
-                  <p>{currentHostelOwner.email}</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Phone Number</p>
-                  <p>{currentHostelOwner.phoneNumber}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Business Name</p>
-                  <p>{currentHostelOwner.businessName}</p>
-                </div>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Business Address</p>
-                <p>{currentHostelOwner.businessAddress}</p>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button onClick={() => setOpenViewDialog(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Hostel Owner Dialog */}
-      <Dialog open={openEditDialog} onOpenChange={setOpenEditDialog}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Edit Hostel Owner</DialogTitle>
-            <DialogDescription>Update hostel owner information.</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleEditHostelOwner} className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-name">Full Name</Label>
-                <Input id="edit-name" name="name" value={formData.name} onChange={handleInputChange} required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-email">Email</Label>
-                <Input
-                  id="edit-email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-phoneNumber">Phone Number</Label>
-                <Input
-                  id="edit-phoneNumber"
-                  name="phoneNumber"
-                  value={formData.phoneNumber}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-businessName">Business Name</Label>
-                <Input
-                  id="edit-businessName"
-                  name="businessName"
-                  value={formData.businessName}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-businessAddress">Business Address</Label>
-              <Input
-                id="edit-businessAddress"
-                name="businessAddress"
-                value={formData.businessAddress}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpenEditDialog(false)}>
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-bold mb-4">Confirm Deletion</h3>
+            <p className="mb-6">
+              Are you sure you want to delete the hostel owner "{ownerToDelete?.name}" ({ownerToDelete?.businessName})?
+              This action cannot be undone and will also delete all associated hostels.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 border rounded-lg hover:bg-gray-100 order-2 sm:order-1"
+              >
                 Cancel
-              </Button>
-              <Button type="submit">Update Hostel Owner</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Hostel Owner Dialog */}
-      <Dialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
-        <DialogContent className="sm:max-w-[400px]">
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this hostel owner? This action cannot be undone and will also delete all
-              associated hostels.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button type="button" variant="outline" onClick={() => setOpenDeleteDialog(false)}>
-              Cancel
-            </Button>
-            <Button type="button" variant="destructive" onClick={handleDeleteHostelOwner}>
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 order-1 sm:order-2"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

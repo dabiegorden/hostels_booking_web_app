@@ -1,10 +1,285 @@
-const Admin = require("../models/Admin")
-const Student = require("../models/Students")
-const HostelOwner = require("../models/hostelOwnerSchema")
-const Hostel = require("../models/Hostel")
-const Room = require("../models/Room")
+const Admin = require("../models/Admin");
+const Student = require("../models/Students");
+const HostelOwner = require("../models/hostelOwnerSchema");
+const Hostel = require("../models/Hostel");
+const Room = require("../models/Room");
 const fs = require("fs")
-const path = require("path")
+const path = require("path");
+
+// ==================== ROOM MANAGEMENT (ADMIN) ====================
+// Get all rooms
+exports.getAllRooms = async (req, res) => {
+  try {
+    const rooms = await Room.find().populate("hostelId", "name address")
+    res.status(200).json({ rooms })
+  } catch (error) {
+    console.error("Get all rooms error:", error)
+    res.status(500).json({ message: "Server error" })
+  }
+}
+
+// Get rooms by hostel ID
+exports.getRoomsByHostel = async (req, res) => {
+  try {
+    const { hostelId } = req.params
+    
+    // Check if hostel exists
+    const hostel = await Hostel.findById(hostelId)
+    if (!hostel) {
+      return res.status(404).json({ message: "Hostel not found" })
+    }
+    
+    const rooms = await Room.find({ hostelId })
+    res.status(200).json({ rooms })
+  } catch (error) {
+    console.error("Get rooms by hostel error:", error)
+    res.status(500).json({ message: "Server error" })
+  }
+}
+
+// Get room by ID
+exports.getRoomById = async (req, res) => {
+  try {
+    const room = await Room.findById(req.params.id).populate("hostelId", "name address")
+
+    if (!room) {
+      return res.status(404).json({ message: "Room not found" })
+    }
+
+    res.status(200).json({ room })
+  } catch (error) {
+    console.error("Get room error:", error)
+    res.status(500).json({ message: "Server error" })
+  }
+}
+
+// Create room
+exports.createRoom = async (req, res) => {
+  try {
+    const { name, type, description, price, capacity, amenities, availability, hostelId } = req.body
+
+    // Validate room type
+    const validTypes = ["1 in 1", "2 in 1", "3 in 1", "4 in 1", "other"]
+    if (!validTypes.includes(type)) {
+      return res.status(400).json({
+        message: "Invalid room type. Must be one of: " + validTypes.join(", "),
+      })
+    }
+
+    // Check if hostel exists
+    const hostel = await Hostel.findById(hostelId)
+    if (!hostel) {
+      // Delete uploaded files if hostel not found
+      if (req.files && req.files.length > 0) {
+        req.files.forEach((file) => {
+          fs.unlinkSync(file.path)
+        })
+      }
+      return res.status(404).json({ message: "Hostel not found" })
+    }
+
+    // Create new room
+    const room = new Room({
+      hostelId,
+      name,
+      type,
+      description,
+      price,
+      capacity,
+      amenities: amenities || [],
+      images: [], // Will be updated if images are uploaded
+      availability: availability !== undefined ? availability : true,
+    })
+
+    // If files were uploaded, add their paths to the room images array
+    if (req.files && req.files.length > 0) {
+      room.images = req.files.map((file) => `/uploads/hostels/${file.filename}`)
+    }
+
+    await room.save()
+
+    res.status(201).json({
+      message: "Room created successfully",
+      room: {
+        id: room._id,
+        name: room.name,
+        type: room.type,
+        price: room.price,
+        images: room.images,
+      },
+    })
+  } catch (error) {
+    console.error("Create room error:", error)
+    res.status(500).json({ message: error.message || "Server error" })
+  }
+}
+
+// Update room
+exports.updateRoom = async (req, res) => {
+  try {
+    const { name, type, description, price, capacity, amenities, availability } = req.body
+
+    // Validate room type if provided
+    if (type) {
+      const validTypes = ["1 in 1", "2 in 1", "3 in 1", "4 in 1", "other"]
+      if (!validTypes.includes(type)) {
+        return res.status(400).json({
+          message: "Invalid room type. Must be one of: " + validTypes.join(", "),
+        })
+      }
+    }
+
+    const room = await Room.findById(req.params.id)
+
+    if (!room) {
+      return res.status(404).json({ message: "Room not found" })
+    }
+
+    // Update fields
+    if (name) room.name = name
+    if (type) room.type = type
+    if (description) room.description = description
+    if (price) room.price = price
+    if (capacity) room.capacity = capacity
+    if (amenities) room.amenities = amenities
+    if (availability !== undefined) room.availability = availability
+
+    // If files were uploaded, add their paths to the room images array
+    if (req.files && req.files.length > 0) {
+      const newImages = req.files.map((file) => `/uploads/hostels/${file.filename}`)
+      room.images = [...room.images, ...newImages]
+    }
+
+    await room.save()
+
+    res.status(200).json({
+      message: "Room updated successfully",
+      room: {
+        id: room._id,
+        name: room.name,
+        type: room.type,
+        price: room.price,
+        availability: room.availability,
+        images: room.images,
+      },
+    })
+  } catch (error) {
+    console.error("Update room error:", error)
+    res.status(500).json({ message: error.message || "Server error" })
+  }
+}
+
+// Upload images for a room
+exports.uploadRoomImages = async (req, res) => {
+  try {
+    const room = await Room.findById(req.params.id)
+
+    if (!room) {
+      // Delete uploaded files if room not found
+      if (req.files && req.files.length > 0) {
+        req.files.forEach((file) => {
+          fs.unlinkSync(file.path)
+        })
+      }
+      return res.status(404).json({ message: "Room not found" })
+    }
+
+    // If files were uploaded, add their paths to the room images array
+    if (req.files && req.files.length > 0) {
+      const newImages = req.files.map((file) => `/uploads/hostels/${file.filename}`)
+      room.images = [...room.images, ...newImages]
+      await room.save()
+    } else {
+      return res.status(400).json({ message: "No images uploaded" })
+    }
+
+    res.status(200).json({
+      message: "Images uploaded successfully",
+      images: req.files.map((file) => `/uploads/hostels/${file.filename}`),
+      room: {
+        id: room._id,
+        name: room.name,
+        images: room.images,
+      },
+    })
+  } catch (error) {
+    console.error("Upload room images error:", error)
+    res.status(500).json({ message: error.message || "Server error" })
+  }
+}
+
+// Delete room image
+exports.deleteRoomImage = async (req, res) => {
+  try {
+    const { id: roomId } = req.params
+    const { imagePath } = req.body
+
+    if (!imagePath) {
+      return res.status(400).json({ message: "Image path is required" })
+    }
+
+    const room = await Room.findById(roomId)
+
+    if (!room) {
+      return res.status(404).json({ message: "Room not found" })
+    }
+
+    // Check if image exists in room images
+    if (!room.images.includes(imagePath)) {
+      return res.status(404).json({ message: "Image not found for this room" })
+    }
+
+    // Remove image from room
+    room.images = room.images.filter((img) => img !== imagePath)
+    await room.save()
+
+    // Delete file from filesystem
+    const filePath = path.join(__dirname, "..", imagePath)
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath)
+    }
+
+    res.status(200).json({
+      message: "Image deleted successfully",
+      room: {
+        id: room._id,
+        name: room.name,
+        images: room.images,
+      },
+    })
+  } catch (error) {
+    console.error("Delete room image error:", error)
+    res.status(500).json({ message: error.message || "Server error" })
+  }
+}
+
+// Delete room
+exports.deleteRoom = async (req, res) => {
+  try {
+    const room = await Room.findById(req.params.id)
+
+    if (!room) {
+      return res.status(404).json({ message: "Room not found" })
+    }
+
+    // Delete room images from filesystem
+    if (room.images && room.images.length > 0) {
+      room.images.forEach((imagePath) => {
+        const filePath = path.join(__dirname, "..", imagePath)
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath)
+        }
+      })
+    }
+
+    await Room.findByIdAndDelete(req.params.id)
+
+    res.status(200).json({ message: "Room deleted successfully" })
+  } catch (error) {
+    console.error("Delete room error:", error)
+    res.status(500).json({ message: "Server error" })
+  }
+};
 
 // ==================== STUDENT MANAGEMENT ====================
 // Get all students
@@ -311,21 +586,58 @@ exports.getHostelById = async (req, res) => {
   }
 }
 
-// Create hostel (admin can create hostels for any owner)
+// Create hostel (admin can create hostels and owners simultaneously)
 exports.createHostel = async (req, res) => {
   try {
-    const { name, description, address, location, owner, amenities, policies } = req.body
+    const { 
+      name, 
+      description, 
+      address, 
+      location, 
+      amenities, 
+      policies,
+      // Owner information from the form
+      ownerName,
+      ownerEmail,
+      ownerPhone,
+      ownerBusinessName,
+      ownerBusinessAddress
+    } = req.body
 
-    // Check if owner exists
-    const hostelOwner = await HostelOwner.findById(owner)
-    if (!hostelOwner) {
-      // Delete uploaded files if owner not found
+    let ownerId;
+
+    // Check if we have owner information to create a new owner
+    if (ownerName && ownerEmail && ownerPhone && ownerBusinessName) {
+      // Check if hostel owner already exists with this email
+      let existingOwner = await HostelOwner.findOne({ email: ownerEmail })
+      
+      if (existingOwner) {
+        // Use existing owner
+        ownerId = existingOwner._id
+      } else {
+        // Create new hostel owner
+        const hostelOwner = new HostelOwner({
+          name: ownerName,
+          email: ownerEmail,
+          phoneNumber: ownerPhone,
+          businessName: ownerBusinessName,
+          businessAddress: ownerBusinessAddress || "",
+          password: "defaultPassword123", // You might want to generate a random password
+          role: "hostel-owner",
+          verified: true, // Admin-created owners are automatically verified
+        })
+
+        await hostelOwner.save()
+        ownerId = hostelOwner._id
+      }
+    } else {
+      // Delete uploaded files if owner information is missing
       if (req.files && req.files.length > 0) {
         req.files.forEach((file) => {
           fs.unlinkSync(file.path)
         })
       }
-      return res.status(404).json({ message: "Hostel owner not found" })
+      return res.status(400).json({ message: "Owner information is required" })
     }
 
     // Create new hostel
@@ -334,11 +646,11 @@ exports.createHostel = async (req, res) => {
       description,
       address,
       location,
-      owner,
+      owner: ownerId,
       images: [], // Will be updated if images are uploaded
-      amenities: amenities || [],
+      amenities: amenities ? JSON.parse(amenities) : [],
       policies: policies || "",
-      verified: true,
+      verified: true, // Admin-created hostels are automatically verified
     })
 
     // If files were uploaded, add their paths to the hostel images array
@@ -354,15 +666,26 @@ exports.createHostel = async (req, res) => {
         id: hostel._id,
         name: hostel.name,
         address: hostel.address,
-        owner: hostel.owner,
+        owner: ownerId,
         images: hostel.images,
       },
     })
   } catch (error) {
     console.error("Create hostel error:", error)
-    res.status(500).json({ message: "Server error" })
+    
+    // Clean up uploaded files on error
+    if (req.files && req.files.length > 0) {
+      req.files.forEach((file) => {
+        if (fs.existsSync(file.path)) {
+          fs.unlinkSync(file.path)
+        }
+      })
+    }
+    
+    res.status(500).json({ message: error.message || "Server error" })
   }
-}
+};
+
 
 // Upload images for a hostel (admin)
 exports.uploadHostelImages = async (req, res) => {

@@ -1,6 +1,7 @@
 const HostelOwner = require("../models/hostelOwnerSchema")
 const Hostel = require("../models/Hostel")
 const Room = require("../models/Room")
+const Booking = require("../models/Booking")
 const fs = require("fs")
 const path = require("path")
 
@@ -56,10 +57,18 @@ exports.updateProfile = async (req, res) => {
 }
 
 // ==================== HOSTEL MANAGEMENT ====================
-// Get all hostels owned by the hostel owner
+// Get all hostels (modified to allow public access)
 exports.getMyHostels = async (req, res) => {
   try {
-    const hostels = await Hostel.find({ owner: req.session.user.id })
+    // If user is authenticated, get hostels owned by the user
+    // Otherwise, get all hostels
+    let hostels
+    if (req.session && req.session.user && req.session.user.id) {
+      hostels = await Hostel.find({ owner: req.session.user.id })
+    } else {
+      hostels = await Hostel.find()
+    }
+
     res.status(200).json({ hostels })
   } catch (error) {
     console.error("Get hostels error:", error)
@@ -67,16 +76,28 @@ exports.getMyHostels = async (req, res) => {
   }
 }
 
-// Get a specific hostel owned by the hostel owner
+// Get a specific hostel (modified to allow public access)
 exports.getMyHostelById = async (req, res) => {
   try {
-    const hostel = await Hostel.findOne({
-      _id: req.params.id,
-      owner: req.session.user.id,
-    })
+    // If user is authenticated, check ownership
+    // Otherwise, just get the hostel by ID
+    let hostel
+    if (req.session && req.session.user && req.session.user.id) {
+      hostel = await Hostel.findOne({
+        _id: req.params.id,
+        owner: req.session.user.id,
+      })
+
+      if (!hostel) {
+        // If not found as owner, try to find it as a public hostel
+        hostel = await Hostel.findById(req.params.id)
+      }
+    } else {
+      hostel = await Hostel.findById(req.params.id)
+    }
 
     if (!hostel) {
-      return res.status(404).json({ message: "Hostel not found or you do not have permission to view it" })
+      return res.status(404).json({ message: "Hostel not found" })
     }
 
     res.status(200).json({ hostel })
@@ -302,19 +323,10 @@ exports.deleteHostel = async (req, res) => {
 }
 
 // ==================== ROOM MANAGEMENT ====================
-// Get all rooms for a specific hostel
+// Get all rooms for a specific hostel (modified to allow public access)
 exports.getRooms = async (req, res) => {
   try {
-    // Verify hostel ownership
-    const hostel = await Hostel.findOne({
-      _id: req.params.hostelId,
-      owner: req.session.user.id,
-    })
-
-    if (!hostel) {
-      return res.status(404).json({ message: "Hostel not found or you do not have permission to view it" })
-    }
-
+    // Get rooms for the hostel without ownership verification
     const rooms = await Room.find({ hostelId: req.params.hostelId })
     res.status(200).json({ rooms })
   } catch (error) {
@@ -323,23 +335,13 @@ exports.getRooms = async (req, res) => {
   }
 }
 
-// Get a specific room
+// Get a specific room (modified to allow public access)
 exports.getRoomById = async (req, res) => {
   try {
     const room = await Room.findById(req.params.roomId)
 
     if (!room) {
       return res.status(404).json({ message: "Room not found" })
-    }
-
-    // Verify hostel ownership
-    const hostel = await Hostel.findOne({
-      _id: room.hostelId,
-      owner: req.session.user.id,
-    })
-
-    if (!hostel) {
-      return res.status(403).json({ message: "You do not have permission to view this room" })
     }
 
     res.status(200).json({ room })
@@ -624,5 +626,143 @@ exports.deleteRoom = async (req, res) => {
   } catch (error) {
     console.error("Delete room error:", error)
     res.status(500).json({ message: "Server error" })
+  }
+}
+
+// ==================== BOOKING MANAGEMENT ====================
+// Get all bookings for all hostels owned by the hostel owner
+exports.getMyBookings = async (req, res) => {
+  try {
+    // Get all hostels owned by the user
+    const hostels = await Hostel.find({ owner: req.session.user.id }).select("_id name")
+
+    if (!hostels || hostels.length === 0) {
+      return res.status(200).json({
+        success: true,
+        count: 0,
+        bookings: [],
+      })
+    }
+
+    // Get hostel IDs
+    const hostelIds = hostels.map((hostel) => hostel._id)
+
+    // Get all bookings for these hostels
+    const bookings = await Booking.find({ hostel: { $in: hostelIds } })
+      .populate("student", "name email studentId phoneNumber")
+      .populate("hostel", "name address")
+      .populate("room", "name type price capacity")
+      .sort({ createdAt: -1 })
+
+    res.status(200).json({
+      success: true,
+      count: bookings.length,
+      bookings,
+    })
+  } catch (error) {
+    console.error("Get my bookings error:", error)
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    })
+  }
+}
+
+// Get bookings for a specific hostel
+exports.getBookingsByHostel = async (req, res) => {
+  try {
+    const { hostelId } = req.params
+
+    // Verify hostel ownership
+    const hostel = await Hostel.findOne({
+      _id: hostelId,
+      owner: req.session.user.id,
+    })
+
+    if (!hostel) {
+      return res.status(403).json({
+        success: false,
+        message: "You do not have permission to view bookings for this hostel",
+      })
+    }
+
+    // Get all bookings for this hostel
+    const bookings = await Booking.find({ hostel: hostelId })
+      .populate("student", "name email studentId phoneNumber")
+      .populate("room", "name type price capacity")
+      .sort({ createdAt: -1 })
+
+    res.status(200).json({
+      success: true,
+      count: bookings.length,
+      bookings,
+    })
+  } catch (error) {
+    console.error("Get hostel bookings error:", error)
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    })
+  }
+}
+
+// Update booking status
+exports.updateBookingStatus = async (req, res) => {
+  try {
+    const { bookingId } = req.params
+    const { bookingStatus } = req.body
+
+    if (!["pending", "confirmed", "cancelled", "completed"].includes(bookingStatus)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid booking status",
+      })
+    }
+
+    // Get the booking
+    const booking = await Booking.findById(bookingId).populate("hostel", "owner")
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      })
+    }
+
+    // Verify hostel ownership
+    if (booking.hostel.owner.toString() !== req.session.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "You do not have permission to update this booking",
+      })
+    }
+
+    // Update booking status
+    booking.bookingStatus = bookingStatus
+    await booking.save()
+
+    // If booking is cancelled, make room available again
+    if (bookingStatus === "cancelled") {
+      const room = await Room.findById(booking.room)
+      if (room) {
+        room.availability = true
+        await room.save()
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Booking status updated successfully",
+      booking,
+    })
+  } catch (error) {
+    console.error("Update booking status error:", error)
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    })
   }
 }

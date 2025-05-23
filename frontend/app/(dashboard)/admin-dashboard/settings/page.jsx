@@ -1,553 +1,687 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { SettingsIcon, CreditCard, Mail, Phone, MapPin, Plus, Trash, Save, FileText, Lock } from "lucide-react"
 import { toast } from "sonner"
+import { Settings, Save, Loader2, Shield, User, Bell, Globe, Key } from "lucide-react"
 
-export default function SettingsPage() {
-  const router = useRouter()
-  const [user, setUser] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
-  const [settings, setSettings] = useState({
+export default function AdminSettings() {
+  const [loading, setLoading] = useState(false)
+  const [initialLoading, setInitialLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState("general")
+  const [generalSettings, setGeneralSettings] = useState({
     siteName: "Hostel Booking System",
-    siteDescription: "Find and book the best hostels",
-    contactEmail: "",
-    contactPhone: "",
-    address: "",
-    logo: "",
-    favicon: "",
-    socialLinks: {
-      facebook: "",
-      twitter: "",
-      instagram: "",
-      linkedin: "",
-    },
-    paymentGateways: [],
-    bookingFee: 0,
-    taxRate: 0,
-    maintenanceMode: false,
-    termsAndConditions: "",
-    privacyPolicy: "",
+    siteDescription: "Find and book the best student hostels",
+    contactEmail: "admin@hostelbooking.com",
+    contactPhone: "+233 123 456 789",
+    address: "University Area, Accra, Ghana",
+  })
+  const [securitySettings, setSecuritySettings] = useState({
+    requireEmailVerification: true,
+    twoFactorAuth: false,
+    passwordExpiryDays: 90,
+    sessionTimeoutMinutes: 30,
+  })
+  const [notificationSettings, setNotificationSettings] = useState({
+    emailNotifications: true,
+    smsNotifications: false,
+    newBookingNotifications: true,
+    paymentNotifications: true,
+    systemAlerts: true,
+  })
+  const [adminProfile, setAdminProfile] = useState({
+    name: "Admin User",
+    email: "admin@hostelbooking.com",
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   })
 
+  // Fetch settings on component mount
   useEffect(() => {
-    // Check authentication
-    checkAuth()
+    const fetchSettings = async () => {
+      try {
+        setInitialLoading(true)
+        // Fetch settings from API using the correct endpoint
+        const response = await fetch("http://localhost:5000/api/settings", {
+          credentials: "include",
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+
+          // Update state with fetched settings
+          if (data.settings) {
+            setGeneralSettings({
+              siteName: data.settings.siteName || generalSettings.siteName,
+              siteDescription: data.settings.siteDescription || generalSettings.siteDescription,
+              contactEmail: data.settings.contactEmail || generalSettings.contactEmail,
+              contactPhone: data.settings.contactPhone || generalSettings.contactPhone,
+              address: data.settings.address || generalSettings.address,
+            })
+          }
+        }
+
+        // Fetch admin profile
+        const adminResponse = await fetch("http://localhost:5000/api/admin/info", {
+          credentials: "include",
+        })
+
+        if (adminResponse.ok) {
+          const adminData = await adminResponse.json()
+          if (adminData.admin) {
+            setAdminProfile({
+              ...adminProfile,
+              name: adminData.admin.name || adminProfile.name,
+              email: adminData.admin.email || adminProfile.email,
+              currentPassword: "",
+              newPassword: "",
+              confirmPassword: "",
+            })
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching settings:", error)
+        // Don't show error toast on initial load as settings might not be set up yet
+      } finally {
+        setInitialLoading(false)
+      }
+    }
+
+    fetchSettings()
   }, [])
 
-  const checkAuth = async () => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
-        credentials: "include",
-      })
-
-      if (!response.ok) {
-        throw new Error("Authentication failed")
-      }
-
-      const data = await response.json()
-
-      if (!data.user || data.user.role !== "admin") {
-        toast.error("Access denied. Admin privileges required.")
-        router.push("/auth/login")
-        return
-      }
-
-      setUser(data.user)
-
-      // Fetch settings
-      fetchSettings()
-    } catch (error) {
-      console.error("Auth error:", error)
-      toast.error("Authentication failed. Please login again.")
-      router.push("/auth/login")
-    }
-  }
-
-  const fetchSettings = async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings`, {
-        credentials: "include",
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch settings")
-      }
-
-      const data = await response.json()
-      setSettings(data.settings)
-    } catch (error) {
-      console.error("Error fetching settings:", error)
-      toast.error("Failed to load settings.")
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleInputChange = (e) => {
+  const handleGeneralChange = (e) => {
     const { name, value } = e.target
-    setSettings((prev) => ({
+    setGeneralSettings((prev) => ({
       ...prev,
       [name]: value,
     }))
   }
 
-  const handleSocialLinkChange = (e) => {
-    const { name, value } = e.target
-    setSettings((prev) => ({
+  const handleSecurityChange = (e) => {
+    const { name, value, type, checked } = e.target
+    setSecuritySettings((prev) => ({
       ...prev,
-      socialLinks: {
-        ...prev.socialLinks,
-        [name]: value,
-      },
+      [name]: type === "checkbox" ? checked : type === "number" ? Number(value) : value,
     }))
   }
 
-  const handleSwitchChange = (name, checked) => {
-    setSettings((prev) => ({
+  const handleNotificationChange = (e) => {
+    const { name, checked } = e.target
+    setNotificationSettings((prev) => ({
       ...prev,
       [name]: checked,
     }))
   }
 
-  const handleNumberChange = (e) => {
+  const handleProfileChange = (e) => {
     const { name, value } = e.target
-    setSettings((prev) => ({
+    setAdminProfile((prev) => ({
       ...prev,
-      [name]: Number.parseFloat(value) || 0,
+      [name]: value,
     }))
   }
 
-  const handleAddPaymentGateway = () => {
-    setSettings((prev) => ({
-      ...prev,
-      paymentGateways: [
-        ...prev.paymentGateways,
-        {
-          name: "",
-          apiKey: "",
-          secretKey: "",
-          isActive: true,
-        },
-      ],
-    }))
-  }
-
-  const handlePaymentGatewayChange = (index, field, value) => {
-    setSettings((prev) => {
-      const updatedGateways = [...prev.paymentGateways]
-      updatedGateways[index] = {
-        ...updatedGateways[index],
-        [field]: field === "isActive" ? value : value,
-      }
-      return {
-        ...prev,
-        paymentGateways: updatedGateways,
-      }
-    })
-  }
-
-  const handleRemovePaymentGateway = (index) => {
-    setSettings((prev) => {
-      const updatedGateways = [...prev.paymentGateways]
-      updatedGateways.splice(index, 1)
-      return {
-        ...prev,
-        paymentGateways: updatedGateways,
-      }
-    })
-  }
-
-  const saveSettings = async () => {
+  const saveGeneralSettings = async (e) => {
+    e.preventDefault()
     try {
-      setIsSaving(true)
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/settings`, {
+      setLoading(true)
+      const response = await fetch("http://localhost:5000/api/admin/settings", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(settings),
+        body: JSON.stringify({
+          siteName: generalSettings.siteName,
+          siteDescription: generalSettings.siteDescription,
+          contactEmail: generalSettings.contactEmail,
+          contactPhone: generalSettings.contactPhone,
+          address: generalSettings.address,
+        }),
         credentials: "include",
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to update settings")
+        throw new Error("Failed to save general settings")
       }
 
-      toast.success("Settings updated successfully.")
+      toast.success("General settings saved successfully")
     } catch (error) {
-      console.error("Error updating settings:", error)
-      toast.error(error.message || "Failed to update settings.")
+      console.error("Error saving general settings:", error)
+      toast.error("Failed to save general settings")
     } finally {
-      setIsSaving(false)
+      setLoading(false)
     }
   }
 
-  if (isLoading) {
+  const saveSecuritySettings = async (e) => {
+    e.preventDefault()
+    try {
+      setLoading(true)
+      const response = await fetch("http://localhost:5000/api/admin/settings", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          security: securitySettings,
+        }),
+        credentials: "include",
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to save security settings")
+      }
+
+      toast.success("Security settings saved successfully")
+    } catch (error) {
+      console.error("Error saving security settings:", error)
+      toast.error("Failed to save security settings")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const saveNotificationSettings = async (e) => {
+    e.preventDefault()
+    try {
+      setLoading(true)
+      const response = await fetch("http://localhost:5000/api/admin/settings", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          notifications: notificationSettings,
+        }),
+        credentials: "include",
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to save notification settings")
+      }
+
+      toast.success("Notification settings saved successfully")
+    } catch (error) {
+      console.error("Error saving notification settings:", error)
+      toast.error("Failed to save notification settings")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const updateAdminProfile = async (e) => {
+    e.preventDefault()
+
+    if (adminProfile.newPassword && adminProfile.newPassword !== adminProfile.confirmPassword) {
+      toast.error("New passwords do not match")
+      return
+    }
+
+    if (adminProfile.newPassword && !adminProfile.currentPassword) {
+      toast.error("Current password is required to set a new password")
+      return
+    }
+
+    try {
+      setLoading(true)
+      const response = await fetch("http://localhost:5000/api/admin/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: adminProfile.name,
+          email: adminProfile.email,
+          currentPassword: adminProfile.currentPassword,
+          newPassword: adminProfile.newPassword,
+        }),
+        credentials: "include",
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update admin profile")
+      }
+
+      toast.success("Admin profile updated successfully")
+
+      // Clear password fields after successful update
+      setAdminProfile({
+        ...adminProfile,
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      })
+    } catch (error) {
+      console.error("Error updating admin profile:", error)
+      toast.error("Failed to update admin profile")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (initialLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600"></div>
+      <div className="flex justify-center items-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm border border-slate-100">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Settings</h1>
-          <p className="text-slate-500 mt-1">Configure your hostel booking system</p>
-        </div>
-        <Button
-          onClick={saveSettings}
-          disabled={isSaving}
-          className="bg-slate-800 hover:bg-slate-900 flex items-center gap-2"
-        >
-          <Save className="h-4 w-4" />
-          {isSaving ? "Saving..." : "Save Settings"}
-        </Button>
+    <div className="p-6">
+      <div className="flex items-center mb-6">
+        <Settings className="h-6 w-6 mr-2" />
+        <h1 className="text-2xl font-bold">Admin Settings</h1>
       </div>
 
-      <Tabs defaultValue="general" className="space-y-4">
-        <TabsList className="bg-white border border-slate-200 p-1">
-          <TabsTrigger
-            value="general"
-            className="flex items-center gap-2 data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900"
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="flex border-b">
+          <button
+            className={`px-6 py-3 font-medium text-sm focus:outline-none ${
+              activeTab === "general" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => setActiveTab("general")}
           >
-            <SettingsIcon className="h-4 w-4" />
+            <Globe className="h-4 w-4 inline mr-2" />
             General
-          </TabsTrigger>
-          <TabsTrigger
-            value="contact"
-            className="flex items-center gap-2 data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900"
+          </button>
+          <button
+            className={`px-6 py-3 font-medium text-sm focus:outline-none ${
+              activeTab === "security"
+                ? "border-b-2 border-blue-600 text-blue-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => setActiveTab("security")}
           >
-            <Mail className="h-4 w-4" />
-            Contact
-          </TabsTrigger>
-          <TabsTrigger
-            value="payment"
-            className="flex items-center gap-2 data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900"
+            <Shield className="h-4 w-4 inline mr-2" />
+            Security
+          </button>
+          <button
+            className={`px-6 py-3 font-medium text-sm focus:outline-none ${
+              activeTab === "notifications"
+                ? "border-b-2 border-blue-600 text-blue-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => setActiveTab("notifications")}
           >
-            <CreditCard className="h-4 w-4" />
-            Payment
-          </TabsTrigger>
-          <TabsTrigger
-            value="legal"
-            className="flex items-center gap-2 data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900"
+            <Bell className="h-4 w-4 inline mr-2" />
+            Notifications
+          </button>
+          <button
+            className={`px-6 py-3 font-medium text-sm focus:outline-none ${
+              activeTab === "profile" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => setActiveTab("profile")}
           >
-            <FileText className="h-4 w-4" />
-            Legal
-          </TabsTrigger>
-        </TabsList>
+            <User className="h-4 w-4 inline mr-2" />
+            Admin Profile
+          </button>
+        </div>
 
-        <TabsContent value="general" className="space-y-4">
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-slate-800">General Settings</CardTitle>
-              <CardDescription>Configure the basic information for your booking system</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="siteName">Site Name</Label>
-                  <Input
-                    id="siteName"
-                    name="siteName"
-                    value={settings.siteName}
-                    onChange={handleInputChange}
-                    className="border-slate-200"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="siteDescription">Site Description</Label>
-                  <Input
-                    id="siteDescription"
-                    name="siteDescription"
-                    value={settings.siteDescription}
-                    onChange={handleInputChange}
-                    className="border-slate-200"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="logo">Logo URL</Label>
-                  <Input
-                    id="logo"
-                    name="logo"
-                    value={settings.logo}
-                    onChange={handleInputChange}
-                    className="border-slate-200"
-                    placeholder="https://example.com/logo.png"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="favicon">Favicon URL</Label>
-                  <Input
-                    id="favicon"
-                    name="favicon"
-                    value={settings.favicon}
-                    onChange={handleInputChange}
-                    className="border-slate-200"
-                    placeholder="https://example.com/favicon.ico"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="maintenanceMode"
-                  checked={settings.maintenanceMode}
-                  onCheckedChange={(checked) => handleSwitchChange("maintenanceMode", checked)}
+        <div className="p-6">
+          {activeTab === "general" && (
+            <form onSubmit={saveGeneralSettings}>
+              <div className="mb-6">
+                <label htmlFor="siteName" className="block text-sm font-medium text-gray-700 mb-1">
+                  Site Name
+                </label>
+                <input
+                  type="text"
+                  id="siteName"
+                  name="siteName"
+                  value={generalSettings.siteName}
+                  onChange={handleGeneralChange}
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <Label htmlFor="maintenanceMode">Maintenance Mode</Label>
-                {settings.maintenanceMode && (
-                  <Badge className="ml-2 bg-red-100 text-red-800 hover:bg-red-200">Enabled</Badge>
-                )}
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
-        <TabsContent value="contact" className="space-y-4">
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-slate-800">Contact Information</CardTitle>
-              <CardDescription>Configure your contact details</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="contactEmail" className="flex items-center gap-1">
-                    <Mail className="h-4 w-4 text-slate-600" /> Email Address
-                  </Label>
-                  <Input
+              <div className="mb-6">
+                <label htmlFor="siteDescription" className="block text-sm font-medium text-gray-700 mb-1">
+                  Site Description
+                </label>
+                <textarea
+                  id="siteDescription"
+                  name="siteDescription"
+                  value={generalSettings.siteDescription}
+                  onChange={handleGeneralChange}
+                  rows={3}
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                    Contact Email
+                  </label>
+                  <input
+                    type="email"
                     id="contactEmail"
                     name="contactEmail"
-                    value={settings.contactEmail}
-                    onChange={handleInputChange}
-                    className="border-slate-200"
-                    placeholder="contact@yourbusiness.com"
+                    value={generalSettings.contactEmail}
+                    onChange={handleGeneralChange}
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="contactPhone" className="flex items-center gap-1">
-                    <Phone className="h-4 w-4 text-slate-600" /> Phone Number
-                  </Label>
-                  <Input
+
+                <div>
+                  <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700 mb-1">
+                    Contact Phone
+                  </label>
+                  <input
+                    type="tel"
                     id="contactPhone"
                     name="contactPhone"
-                    value={settings.contactPhone}
-                    onChange={handleInputChange}
-                    className="border-slate-200"
-                    placeholder="+1234567890"
+                    value={generalSettings.contactPhone}
+                    onChange={handleGeneralChange}
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="address" className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4 text-slate-600" /> Address
-                </Label>
-                <Textarea
+              <div className="mb-6">
+                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+                  Address
+                </label>
+                <input
+                  type="text"
                   id="address"
                   name="address"
-                  value={settings.address}
-                  onChange={handleInputChange}
-                  className="border-slate-200"
-                  placeholder="123 Main St, City, Country"
-                  rows={3}
+                  value={generalSettings.address}
+                  onChange={handleGeneralChange}
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
-        <TabsContent value="payment" className="space-y-4">
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-slate-800">Payment Settings</CardTitle>
-              <CardDescription>Configure payment options and fees</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="bookingFee">Booking Fee (%)</Label>
-                  <Input
-                    id="bookingFee"
-                    name="bookingFee"
-                    type="number"
-                    value={settings.bookingFee}
-                    onChange={handleNumberChange}
-                    className="border-slate-200"
-                    min="0"
-                    step="0.01"
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300 flex items-center"
+                >
+                  {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  <Save className="h-4 w-4 mr-2" />
+                  Save General Settings
+                </button>
+              </div>
+            </form>
+          )}
+
+          {activeTab === "security" && (
+            <form onSubmit={saveSecuritySettings}>
+              <div className="mb-6">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="requireEmailVerification"
+                    name="requireEmailVerification"
+                    checked={securitySettings.requireEmailVerification}
+                    onChange={handleSecurityChange}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
+                  <label htmlFor="requireEmailVerification" className="ml-2 block text-sm text-gray-700">
+                    Require Email Verification for New Accounts
+                  </label>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="taxRate">Tax Rate (%)</Label>
-                  <Input
-                    id="taxRate"
-                    name="taxRate"
+              </div>
+
+              <div className="mb-6">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="twoFactorAuth"
+                    name="twoFactorAuth"
+                    checked={securitySettings.twoFactorAuth}
+                    onChange={handleSecurityChange}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="twoFactorAuth" className="ml-2 block text-sm text-gray-700">
+                    Enable Two-Factor Authentication
+                  </label>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label htmlFor="passwordExpiryDays" className="block text-sm font-medium text-gray-700 mb-1">
+                    Password Expiry (Days)
+                  </label>
+                  <input
                     type="number"
-                    value={settings.taxRate}
-                    onChange={handleNumberChange}
-                    className="border-slate-200"
+                    id="passwordExpiryDays"
+                    name="passwordExpiryDays"
+                    value={securitySettings.passwordExpiryDays}
+                    onChange={handleSecurityChange}
                     min="0"
-                    step="0.01"
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Set to 0 for no expiry</p>
+                </div>
+
+                <div>
+                  <label htmlFor="sessionTimeoutMinutes" className="block text-sm font-medium text-gray-700 mb-1">
+                    Session Timeout (Minutes)
+                  </label>
+                  <input
+                    type="number"
+                    id="sessionTimeoutMinutes"
+                    name="sessionTimeoutMinutes"
+                    value={securitySettings.sessionTimeoutMinutes}
+                    onChange={handleSecurityChange}
+                    min="5"
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-slate-800">Payment Gateways</CardTitle>
-                <CardDescription>Configure payment gateway integrations</CardDescription>
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300 flex items-center"
+                >
+                  {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Security Settings
+                </button>
               </div>
-              <Button
-                onClick={handleAddPaymentGateway}
-                className="bg-green-600 hover:bg-green-700 flex items-center gap-1"
-              >
-                <Plus className="h-4 w-4" /> Add Gateway
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {settings.paymentGateways.length === 0 ? (
-                <div className="text-center py-6 text-slate-500">No payment gateways configured yet.</div>
-              ) : (
-                settings.paymentGateways.map((gateway, index) => (
-                  <div key={index} className="border border-slate-200 rounded-lg p-4 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-medium text-slate-800">Gateway #{index + 1}</h3>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemovePaymentGateway(index)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <Separator />
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor={`gateway-${index}-name`}>Gateway Name</Label>
-                        <Input
-                          id={`gateway-${index}-name`}
-                          value={gateway.name}
-                          onChange={(e) => handlePaymentGatewayChange(index, "name", e.target.value)}
-                          className="border-slate-200"
-                          placeholder="e.g., PayPal, Stripe"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`gateway-${index}-active`}>Status</Label>
-                        <div className="flex items-center space-x-2">
-                          <Switch
-                            id={`gateway-${index}-active`}
-                            checked={gateway.isActive}
-                            onCheckedChange={(checked) => handlePaymentGatewayChange(index, "isActive", checked)}
-                          />
-                          <Label htmlFor={`gateway-${index}-active`}>{gateway.isActive ? "Active" : "Inactive"}</Label>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor={`gateway-${index}-apiKey`} className="flex items-center gap-1">
-                          <Lock className="h-4 w-4 text-slate-600" /> API Key
-                        </Label>
-                        <Input
-                          id={`gateway-${index}-apiKey`}
-                          value={gateway.apiKey}
-                          onChange={(e) => handlePaymentGatewayChange(index, "apiKey", e.target.value)}
-                          className="border-slate-200"
-                          type="password"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`gateway-${index}-secretKey`} className="flex items-center gap-1">
-                          <Lock className="h-4 w-4 text-slate-600" /> Secret Key
-                        </Label>
-                        <Input
-                          id={`gateway-${index}-secretKey`}
-                          value={gateway.secretKey}
-                          onChange={(e) => handlePaymentGatewayChange(index, "secretKey", e.target.value)}
-                          className="border-slate-200"
-                          type="password"
-                        />
-                      </div>
-                    </div>
+            </form>
+          )}
+
+          {activeTab === "notifications" && (
+            <form onSubmit={saveNotificationSettings}>
+              <div className="mb-6">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="emailNotifications"
+                    name="emailNotifications"
+                    checked={notificationSettings.emailNotifications}
+                    onChange={handleNotificationChange}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="emailNotifications" className="ml-2 block text-sm text-gray-700">
+                    Enable Email Notifications
+                  </label>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="smsNotifications"
+                    name="smsNotifications"
+                    checked={notificationSettings.smsNotifications}
+                    onChange={handleNotificationChange}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="smsNotifications" className="ml-2 block text-sm text-gray-700">
+                    Enable SMS Notifications
+                  </label>
+                </div>
+              </div>
+
+              <div className="border-t border-gray-200 pt-4 mb-6">
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Notification Types</h3>
+
+                <div className="space-y-3">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="newBookingNotifications"
+                      name="newBookingNotifications"
+                      checked={notificationSettings.newBookingNotifications}
+                      onChange={handleNotificationChange}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="newBookingNotifications" className="ml-2 block text-sm text-gray-700">
+                      New Booking Notifications
+                    </label>
                   </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
 
-        <TabsContent value="legal" className="space-y-4">
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-slate-800">Terms and Conditions</CardTitle>
-              <CardDescription>Set your terms and conditions for the booking system</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                id="termsAndConditions"
-                name="termsAndConditions"
-                value={settings.termsAndConditions}
-                onChange={handleInputChange}
-                className="border-slate-200 min-h-[200px]"
-                placeholder="Enter your terms and conditions here..."
-              />
-            </CardContent>
-          </Card>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="paymentNotifications"
+                      name="paymentNotifications"
+                      checked={notificationSettings.paymentNotifications}
+                      onChange={handleNotificationChange}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="paymentNotifications" className="ml-2 block text-sm text-gray-700">
+                      Payment Notifications
+                    </label>
+                  </div>
 
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-slate-800">Privacy Policy</CardTitle>
-              <CardDescription>Set your privacy policy for the booking system</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                id="privacyPolicy"
-                name="privacyPolicy"
-                value={settings.privacyPolicy}
-                onChange={handleInputChange}
-                className="border-slate-200 min-h-[200px]"
-                placeholder="Enter your privacy policy here..."
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="systemAlerts"
+                      name="systemAlerts"
+                      checked={notificationSettings.systemAlerts}
+                      onChange={handleNotificationChange}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="systemAlerts" className="ml-2 block text-sm text-gray-700">
+                      System Alerts
+                    </label>
+                  </div>
+                </div>
+              </div>
 
-      <div className="flex justify-end">
-        <Button
-          onClick={saveSettings}
-          disabled={isSaving}
-          className="bg-slate-800 hover:bg-slate-900 flex items-center gap-2"
-        >
-          <Save className="h-4 w-4" />
-          {isSaving ? "Saving..." : "Save All Settings"}
-        </Button>
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300 flex items-center"
+                >
+                  {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Notification Settings
+                </button>
+              </div>
+            </form>
+          )}
+
+          {activeTab === "profile" && (
+            <form onSubmit={updateAdminProfile}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={adminProfile.name}
+                    onChange={handleProfileChange}
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={adminProfile.email}
+                    onChange={handleProfileChange}
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-gray-200 pt-6 mb-6">
+                <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
+                  <Key className="h-4 w-4 mr-2" />
+                  Change Password
+                </h3>
+
+                <div className="mb-6">
+                  <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                    Current Password
+                  </label>
+                  <input
+                    type="password"
+                    id="currentPassword"
+                    name="currentPassword"
+                    value={adminProfile.currentPassword}
+                    onChange={handleProfileChange}
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                      New Password
+                    </label>
+                    <input
+                      type="password"
+                      id="newPassword"
+                      name="newPassword"
+                      value={adminProfile.newPassword}
+                      onChange={handleProfileChange}
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                      Confirm New Password
+                    </label>
+                    <input
+                      type="password"
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      value={adminProfile.confirmPassword}
+                      onChange={handleProfileChange}
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300 flex items-center"
+                >
+                  {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  <Save className="h-4 w-4 mr-2" />
+                  Update Profile
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   )

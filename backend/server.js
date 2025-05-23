@@ -16,6 +16,7 @@ const paymentRoutes = require("./routes/paymentRoutes")
 const bookingRoutes = require("./routes/bookingRoutes")
 const reviewRoutes = require("./routes/reviewRoutes")
 const settingsRoutes = require("./routes/settingsRoutes")
+const publicRoutes = require("./routes/public-routes") // Add the new public routes
 
 const app = express()
 
@@ -44,6 +45,7 @@ app.use("/api", paymentRoutes)
 app.use("/api", bookingRoutes)
 app.use("/api", reviewRoutes)
 app.use("/api", settingsRoutes)
+app.use("/api/public", publicRoutes) // Add the public routes
 
 // Error handling middleware
 app.use((err, req, res, next) => {

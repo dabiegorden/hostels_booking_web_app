@@ -18,12 +18,11 @@ import {
   CreditCard,
   Star,
   Settings,
-  BarChart2,
 } from "lucide-react";
 
 
 // Sidebar links for the admin dashboard
-export const sidebarLinks = [
+export const AdminSidebarLinks = [
   {
     id: 1,
     title: "Dashboard",
@@ -38,39 +37,33 @@ export const sidebarLinks = [
   },
   {
     id: 3,
-    title: "Users",
-    url: "/admin-dashboard/users",
+    title: "Students",
+    url: "/admin-dashboard/students",
     icon: Users,
   },
   {
     id: 4,
+    title: "Hostel Owners",
+    url: "/admin-dashboard/hostel-owners",
+    icon: Users,
+  },
+  {
+    id: 5,
     title: "Bookings",
     url: "/admin-dashboard/bookings",
     icon: CalendarCheck,
   },
   {
-    id: 5,
+    id: 6,
     title: "Payments",
     url: "/admin-dashboard/payments",
     icon: CreditCard,
-  },
-  {
-    id: 6,
-    title: "Reviews",
-    url: "/admin-dashboard/reviews",
-    icon: Star,
   },
   {
     id: 7,
     title: "System Settings",
     url: "/admin-dashboard/settings",
     icon: Settings,
-  },
-  {
-    id: 8,
-    title: "Reports",
-    url: "/admin-dashboard/reports",
-    icon: BarChart2,
   },
 ];
 

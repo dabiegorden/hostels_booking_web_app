@@ -22,6 +22,7 @@ import {
   Clock,
   Briefcase,
   MapPinned,
+  BookIcon,
 } from "lucide-react"
 import logoImage from "@/public/assets/cug-logo.jpg"
 import Image from "next/image"
@@ -434,15 +435,15 @@ const Navbar = () => {
           </Link>
 
           <div className="relative" ref={hostelsMenuRef}>
-            <button
-              type="button"
+            <Link
+            href={"/hostels"}
               className="cursor-pointer flex items-center gap-x-1 text-sm/6 font-semibold text-gray-900"
               aria-expanded={hostelsMenuOpen}
               onClick={() => setHostelsMenuOpen(!hostelsMenuOpen)}
             >
               <Building className="size-4" />
               Hostels
-            </button>
+            </Link>
           </div>
 
           <Link href="/about" className="text-sm/6 font-semibold text-gray-900 flex items-center gap-1">
@@ -484,6 +485,7 @@ const Navbar = () => {
 
                     <div className="border-t pt-3 space-y-2">
                       {user.role === "student" && (
+                        <div className="students-details">
                         <Link
                           href="/students/profile"
                           className="flex items-center gap-2 text-sm/6 font-semibold text-gray-600 hover:text-gray-900 w-full py-2 cursor-pointer"
@@ -491,8 +493,17 @@ const Navbar = () => {
                           <Settings className="size-4" />
                           Edit Profile
                         </Link>
+                        <Link
+                          href="/bookings"
+                          className="flex items-center gap-2 text-sm/6 font-semibold text-gray-600 hover:text-gray-900 w-full py-2 cursor-pointer"
+                        >
+                          <BookIcon className="size-4" />
+                          My Bookings
+                        </Link>
+                        </div>
                       )}
                       {user.role === "hostel-owner" && (
+                        <div className="hostel-owner-bookings">
                         <Link
                           href="/hostel-owners-dashboard"
                           className="flex items-center gap-2 text-sm/6 font-semibold text-gray-600 hover:text-gray-900 w-full py-2 cursor-pointer"
@@ -500,15 +511,32 @@ const Navbar = () => {
                           <Settings className="size-4" />
                           Manage Hostels
                         </Link>
+                        <Link
+                          href="/hostel-owners/bookings"
+                          className="flex items-center gap-2 text-sm/6 font-semibold text-gray-600 hover:text-gray-900 w-full py-2 cursor-pointer"
+                        >
+                          <BookIcon className="size-4" />
+                          My Bookings
+                        </Link>
+                        </div>
                       )}
                       {user.role === "admin" && (
+                       <div className="admin-bookings-details">
                         <Link
-                          href="/admin/dashboard"
+                          href="/admin-dashboard"
                           className="flex items-center gap-2 text-sm/6 font-semibold text-gray-600 hover:text-gray-900 w-full py-2 cursor-pointer"
                         >
                           <Settings className="size-4" />
                           Admin Dashboard
                         </Link>
+                        <Link
+                          href="/admin-dashboard/bookings"
+                          className="flex items-center gap-2 text-sm/6 font-semibold text-gray-600 hover:text-gray-900 w-full py-2 cursor-pointer"
+                        >
+                          <BookIcon className="size-4" />
+                          Manage Bookings
+                        </Link>
+                       </div>
                       )}
                       <button
                         onClick={handleLogout}

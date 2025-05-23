@@ -202,21 +202,9 @@ exports.getPaymentsByStudent = async (req, res) => {
 
 
 // Fix for the getPaymentsByHostel function
-// Fix for the getPaymentsByHostel function
 exports.getPaymentsByHostel = async (req, res) => {
   try {
     const hostelId = req.params.hostelId
-
-    // Debug session info
-    // console.log("Payment request session:", {
-    //   user: req.session.user
-    //     ? {
-    //         id: req.session.user.id,
-    //         _id: req.session.user._id,
-    //         role: req.session.user.role,
-    //       }
-    //     : null,
-    // })
 
     // Verify hostel exists
     const hostel = await Hostel.findById(hostelId)
@@ -227,9 +215,6 @@ exports.getPaymentsByHostel = async (req, res) => {
         message: "Hostel not found",
       })
     }
-
-    // Debug hostel owner info
-    // console.log("Hostel owner:", hostel.owner)
 
     // More flexible authorization check
     const isAuthorized =

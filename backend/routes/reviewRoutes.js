@@ -13,8 +13,8 @@ router.put("/reviews/:id", isAuthenticated, isStudent, reviewController.updateRe
 router.delete("/reviews/:id", isAuthenticated, reviewController.deleteReview)
 router.get("/students/:studentId/reviews", isAuthenticated, reviewController.getReviewsByStudent)
 
-// Public routes
-router.get("/hostels/:hostelId/reviews", reviewController.getReviewsByHostel)
+// Public routes - moved to public controller
+// router.get("/hostels/:hostelId/reviews", reviewController.getReviewsByHostel)
 router.get("/reviews/:id", reviewController.getReviewById)
 router.post("/reviews/:id/report", isAuthenticated, reviewController.reportReview)
 

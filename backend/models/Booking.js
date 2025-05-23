@@ -26,7 +26,9 @@ const BookingSchema = new mongoose.Schema(
       required: true,
     },
     duration: {
-      type: Number, // Duration in months
+      type: String, // Changed from Number to String
+      enum: ["First Semester", "Second Semester", "Full Year"],
+      default: "First Semester",
       required: true,
     },
     totalAmount: {
@@ -35,16 +37,26 @@ const BookingSchema = new mongoose.Schema(
     },
     paymentStatus: {
       type: String,
-      enum: ["pending", "partial", "paid"],
-      default: "pending",
+      enum: ["Partial Payment", "Full Payment"],
+      default: "Partial Payment",
     },
     bookingStatus: {
       type: String,
       enum: ["pending", "confirmed", "cancelled", "completed"],
-      default: "pending",
+      default: "pending", // Changed from "paid" to "pending" to match controller logic
     },
     specialRequests: {
       type: String,
+    },
+    customerInfo: {
+      fullName: String,
+      email: String,
+      phone: String,
+    },
+    mobilePayment: {
+      network: String,
+      phoneNumber: String,
+      transactionId: String,
     },
   },
   { timestamps: true },

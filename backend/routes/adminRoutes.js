@@ -38,4 +38,18 @@ router.delete("/hostels/:id", adminController.deleteHostel)
 router.post("/hostels/:id/images", uploadHostelImages, adminController.uploadHostelImages)
 router.delete("/hostels/:id/images", adminController.deleteHostelImage)
 
+// Room management
+router.get("/rooms", adminController.getAllRooms)
+router.post("/rooms", uploadHostelImages, adminController.createRoom)
+router.get("/rooms/:id", adminController.getRoomById)
+router.put("/rooms/:id", uploadHostelImages, adminController.updateRoom)
+router.delete("/rooms/:id", adminController.deleteRoom)
+
+// Room image management
+router.post("/rooms/:id/images", uploadHostelImages, adminController.uploadRoomImages)
+router.delete("/rooms/:id/images", adminController.deleteRoomImage)
+
+// Get rooms by hostel
+router.get("/hostels/:hostelId/rooms", adminController.getRoomsByHostel)
+
 module.exports = router
