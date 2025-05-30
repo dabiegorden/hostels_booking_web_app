@@ -7,10 +7,10 @@ import Link from 'next/link';
 
 import { motion } from "framer-motion";
 
-import hostel1 from '@/public/assets/hostel1_bg.jpeg';
-import hostel2 from '@/public/assets/hostel1_bg.jpeg';
-import hostel3 from '@/public/assets/hostel1_bg.jpeg';
-import hostel4 from '@/public/assets/hostel1_bg.jpeg';
+import hostel1 from '@/public/assets/sow.png';
+import hostel2 from '@/public/assets/pop.png';
+import hostel3 from '@/public/assets/hostel1.jpeg';
+import hostel4 from '@/public/assets/pop.png';
 
 export default function AboutPage() {
   return (

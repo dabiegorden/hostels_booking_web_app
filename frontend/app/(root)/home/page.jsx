@@ -10,7 +10,7 @@ import { MapPin, Search, Star, Calendar } from "lucide-react"
 import useDebounce from "@/hooks/useDebounce"
 
 import hostelImage4 from "@/public/assets/hostel1.jpeg"
-import hostelImage5 from "@/public/assets/hostel2.jpeg"
+import hostelImage5 from "@/public/assets/pop.png"
 import hostelImage6 from "@/public/assets/hostel3.jpeg"
 
 // Define styles for various elements
