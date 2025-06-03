@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState, use, useEffect } from "react"
-import { toast } from "sonner"
+import { useState, use, useEffect } from "react";
+import { toast } from "sonner";
 import {
   MapPin,
   Star,
@@ -15,117 +15,134 @@ import {
   Loader2,
   Plus,
   Trash2,
-} from "lucide-react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function HostelDetails({ params }) {
   const hostelId = use(params).id;
-  const router = useRouter()
-  const [hostel, setHostel] = useState(null)
-  const [rooms, setRooms] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState("details")
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const router = useRouter();
+  const [hostel, setHostel] = useState(null);
+  const [rooms, setRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("details");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     const fetchHostelDetails = async () => {
       try {
-        setLoading(true)
-        const response = await fetch(`http://localhost:5000/api/admin/hostels/${hostelId}`, {
-          credentials: "include",
-        })
+        setLoading(true);
+        const response = await fetch(
+          `http://localhost:5000/api/admin/hostels/${hostelId}`,
+          {
+            credentials: "include",
+          }
+        );
 
         if (!response.ok) {
-          throw new Error("Failed to fetch hostel details")
+          throw new Error("Failed to fetch hostel details");
         }
 
-        const data = await response.json()
-        setHostel(data.hostel)
+        const data = await response.json();
+        setHostel(data.hostel);
 
         // Fetch rooms for this hostel
-        const roomsResponse = await fetch(`http://localhost:5000/api/admin/hostels/${hostelId}/rooms`, {
-          credentials: "include",
-        })
+        const roomsResponse = await fetch(
+          `http://localhost:5000/api/admin/hostels/${hostelId}/rooms`,
+          {
+            credentials: "include",
+          }
+        );
 
         if (roomsResponse.ok) {
-          const roomsData = await roomsResponse.json()
-          setRooms(roomsData.rooms || [])
+          const roomsData = await roomsResponse.json();
+          setRooms(roomsData.rooms || []);
         }
       } catch (error) {
-        console.error("Error fetching hostel details:", error)
-        toast.error("Failed to load hostel details")
+        console.error("Error fetching hostel details:", error);
+        toast.error("Failed to load hostel details");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchHostelDetails()
-  }, [hostelId])
+    fetchHostelDetails();
+  }, [hostelId]);
 
   const handleVerifyToggle = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/hostels/${hostelId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ verified: !hostel.verified }),
-        credentials: "include",
-      })
+      const response = await fetch(
+        `http://localhost:5000/api/admin/hostels/${hostelId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ verified: !hostel.verified }),
+          credentials: "include",
+        }
+      );
 
       if (!response.ok) {
-        throw new Error("Failed to update hostel verification status")
+        throw new Error("Failed to update hostel verification status");
       }
 
-      setHostel({ ...hostel, verified: !hostel.verified })
-      toast.success(`Hostel ${hostel.verified ? "unverified" : "verified"} successfully`)
+      setHostel({ ...hostel, verified: !hostel.verified });
+      toast.success(
+        `Hostel ${hostel.verified ? "unverified" : "verified"} successfully`
+      );
     } catch (error) {
-      console.error("Error updating hostel verification:", error)
-      toast.error("Failed to update hostel verification status")
+      console.error("Error updating hostel verification:", error);
+      toast.error("Failed to update hostel verification status");
     }
-  }
+  };
 
   const handleDeleteClick = () => {
-    setShowDeleteModal(true)
-  }
+    setShowDeleteModal(true);
+  };
 
   const handleDeleteConfirm = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/hostels/${hostelId}`, {
-        method: "DELETE",
-        credentials: "include",
-      })
+      const response = await fetch(
+        `http://localhost:5000/api/admin/hostels/${hostelId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
 
       if (!response.ok) {
-        throw new Error("Failed to delete hostel")
+        throw new Error("Failed to delete hostel");
       }
 
-      toast.success("Hostel deleted successfully")
-      router.push("/admin-dashboard/hostels")
+      toast.success("Hostel deleted successfully");
+      router.push("/admin-dashboard/hostels");
     } catch (error) {
-      console.error("Error deleting hostel:", error)
-      toast.error("Failed to delete hostel")
+      console.error("Error deleting hostel:", error);
+      toast.error("Failed to delete hostel");
     } finally {
-      setShowDeleteModal(false)
+      setShowDeleteModal(false);
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-96">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
       </div>
-    )
+    );
   }
 
   if (!hostel) {
     return (
       <div className="p-6">
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold text-gray-700 mb-4">Hostel Not Found</h2>
+          <h2 className="text-2xl font-bold text-gray-700 mb-4">
+            Hostel Not Found
+          </h2>
           <p className="text-gray-500 mb-6">
-            The hostel you're looking for doesn't exist or you don't have permission to view it.
+            The hostel you're looking for doesn't exist or you don't have
+            permission to view it.
           </p>
           <Link
             href="/admin-dashboard/hostels"
@@ -135,13 +152,16 @@ export default function HostelDetails({ params }) {
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="p-6">
       <div className="mb-6">
-        <Link href="/admin-dashboard/hostels" className="flex items-center text-blue-600 hover:text-blue-800">
+        <Link
+          href="/admin-dashboard/hostels"
+          className="flex items-center text-blue-600 hover:text-blue-800"
+        >
           <ArrowLeft className="h-4 w-4 mr-1" />
           Back to Hostels
         </Link>
@@ -211,7 +231,9 @@ export default function HostelDetails({ params }) {
             </button>
             <button
               className={`px-6 py-3 font-medium text-sm focus:outline-none ${
-                activeTab === "rooms" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700"
+                activeTab === "rooms"
+                  ? "border-b-2 border-blue-600 text-blue-600"
+                  : "text-gray-500 hover:text-gray-700"
               }`}
               onClick={() => setActiveTab("rooms")}
             >
@@ -236,7 +258,9 @@ export default function HostelDetails({ params }) {
               <div className="lg:col-span-2">
                 <div className="mb-6">
                   <h2 className="text-xl font-bold mb-4">Description</h2>
-                  <p className="text-gray-700">{hostel.description || "No description provided."}</p>
+                  <p className="text-gray-700">
+                    {hostel.description || "No description provided."}
+                  </p>
                 </div>
 
                 <div className="mb-6">
@@ -257,7 +281,9 @@ export default function HostelDetails({ params }) {
 
                 <div className="mb-6">
                   <h2 className="text-xl font-bold mb-4">Policies</h2>
-                  <p className="text-gray-700">{hostel.policies || "No policies provided."}</p>
+                  <p className="text-gray-700">
+                    {hostel.policies || "No policies provided."}
+                  </p>
                 </div>
               </div>
 
@@ -270,7 +296,11 @@ export default function HostelDetails({ params }) {
                       <p className="text-sm text-gray-500">Owner</p>
                       <div className="flex items-center mt-1">
                         <User className="h-4 w-4 text-gray-400 mr-2" />
-                        <p className="font-medium">{hostel.owner?.name || hostel.owner?.businessName || "N/A"}</p>
+                        <p className="font-medium">
+                          {hostel.owner?.name ||
+                            hostel.owner?.businessName ||
+                            "N/A"}
+                        </p>
                       </div>
                     </div>
 
@@ -279,7 +309,9 @@ export default function HostelDetails({ params }) {
                       <div className="flex items-center mt-1">
                         <Star className="h-4 w-4 text-amber-400 mr-2" />
                         <p className="font-medium">
-                          {hostel.rating ? `${hostel.rating.toFixed(1)} / 5` : "No ratings yet"}
+                          {hostel.rating
+                            ? `${hostel.rating.toFixed(1)} / 5`
+                            : "No ratings yet"}
                         </p>
                       </div>
                     </div>
@@ -288,7 +320,9 @@ export default function HostelDetails({ params }) {
                       <p className="text-sm text-gray-500">Created On</p>
                       <div className="flex items-center mt-1">
                         <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                        <p className="font-medium">{new Date(hostel.createdAt).toLocaleDateString()}</p>
+                        <p className="font-medium">
+                          {new Date(hostel.createdAt).toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -299,7 +333,10 @@ export default function HostelDetails({ params }) {
                   {hostel.images && hostel.images.length > 0 ? (
                     <div className="grid grid-cols-2 gap-3">
                       {hostel.images.map((image, index) => (
-                        <div key={index} className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                        <div
+                          key={index}
+                          className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden"
+                        >
                           <img
                             src={`http://localhost:5000${image}`}
                             alt={`${hostel.name} - Image ${index + 1}`}
@@ -332,8 +369,12 @@ export default function HostelDetails({ params }) {
               {rooms.length === 0 ? (
                 <div className="text-center py-12 bg-gray-50 rounded-lg">
                   <Bed className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-700 mb-2">No Rooms Available</h3>
-                  <p className="text-gray-500 mb-6">This hostel doesn't have any rooms yet.</p>
+                  <h3 className="text-lg font-medium text-gray-700 mb-2">
+                    No Rooms Available
+                  </h3>
+                  <p className="text-gray-500 mb-6">
+                    This hostel doesn't have any rooms yet.
+                  </p>
                   <Link
                     href={`/admin-dashboard/hostels/${hostelId}/rooms/create`}
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
@@ -344,7 +385,10 @@ export default function HostelDetails({ params }) {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {rooms.map((room) => (
-                    <div key={room._id} className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                    <div
+                      key={room._id}
+                      className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                    >
                       <div className="aspect-video bg-gray-100 relative">
                         {room.images && room.images.length > 0 ? (
                           <img
@@ -363,7 +407,9 @@ export default function HostelDetails({ params }) {
                       </div>
                       <div className="p-4">
                         <h3 className="font-bold text-lg mb-1">{room.name}</h3>
-                        <p className="text-gray-500 text-sm mb-3">{room.type}</p>
+                        <p className="text-gray-500 text-sm mb-3">
+                          {room.type}
+                        </p>
                         <div className="flex justify-between items-center">
                           <div className="flex items-center text-sm text-gray-600">
                             <User className="h-4 w-4 mr-1" />
@@ -399,11 +445,17 @@ export default function HostelDetails({ params }) {
 
           {activeTab === "bookings" && (
             <div>
-              <h2 className="text-xl font-bold mb-6">Bookings for this Hostel</h2>
+              <h2 className="text-xl font-bold mb-6">
+                Bookings for this Hostel
+              </h2>
               <div className="text-center py-12 bg-gray-50 rounded-lg">
                 <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-700 mb-2">Booking Information</h3>
-                <p className="text-gray-500 mb-6">View all bookings related to this hostel.</p>
+                <h3 className="text-lg font-medium text-gray-700 mb-2">
+                  Booking Information
+                </h3>
+                <p className="text-gray-500 mb-6">
+                  View all bookings related to this hostel.
+                </p>
                 <Link
                   href={`/admin-dashboard/bookings?hostelId=${hostelId}`}
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
@@ -422,8 +474,9 @@ export default function HostelDetails({ params }) {
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-bold mb-4">Confirm Deletion</h3>
             <p className="mb-6">
-              Are you sure you want to delete the hostel "{hostel.name}"? This action cannot be undone and will also
-              delete all rooms associated with this hostel.
+              Are you sure you want to delete the hostel "{hostel.name}"? This
+              action cannot be undone and will also delete all rooms associated
+              with this hostel.
             </p>
             <div className="flex justify-end space-x-3">
               <button
@@ -443,5 +496,5 @@ export default function HostelDetails({ params }) {
         </div>
       )}
     </div>
-  )
+  );
 }

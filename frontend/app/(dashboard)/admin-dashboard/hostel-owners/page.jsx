@@ -1,9 +1,19 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { toast } from "sonner"
-import { User, Search, Plus, Edit, Trash2, Mail, Phone, Building, Loader2 } from "lucide-react"
-import Link from "next/link"
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import {
+  User,
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  Mail,
+  Phone,
+  Building,
+  Loader2,
+} from "lucide-react";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -11,76 +21,82 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 
 export default function HostelOwners() {
-  const [hostelOwners, setHostelOwners] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [ownerToDelete, setOwnerToDelete] = useState(null)
+  const [hostelOwners, setHostelOwners] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [ownerToDelete, setOwnerToDelete] = useState(null);
 
   useEffect(() => {
-    fetchHostelOwners()
-  }, [])
+    fetchHostelOwners();
+  }, []);
 
   const fetchHostelOwners = async () => {
     try {
-      setLoading(true)
-      const response = await fetch("http://localhost:5000/api/admin/hostel-owners", {
-        credentials: "include",
-      })
+      setLoading(true);
+      const response = await fetch(
+        "http://localhost:5000/api/admin/hostel-owners",
+        {
+          credentials: "include",
+        }
+      );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch hostel owners")
+        throw new Error("Failed to fetch hostel owners");
       }
 
-      const data = await response.json()
-      setHostelOwners(data.hostelOwners || [])
+      const data = await response.json();
+      setHostelOwners(data.hostelOwners || []);
     } catch (error) {
-      console.error("Error fetching hostel owners:", error)
-      toast.error("Failed to load hostel owners")
+      console.error("Error fetching hostel owners:", error);
+      toast.error("Failed to load hostel owners");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleDeleteClick = (owner) => {
-    setOwnerToDelete(owner)
-    setShowDeleteModal(true)
-  }
+    setOwnerToDelete(owner);
+    setShowDeleteModal(true);
+  };
 
   const handleDeleteConfirm = async () => {
-    if (!ownerToDelete) return
+    if (!ownerToDelete) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/hostel-owners/${ownerToDelete._id}`, {
-        method: "DELETE",
-        credentials: "include",
-      })
+      const response = await fetch(
+        `http://localhost:5000/api/admin/hostel-owners/${ownerToDelete._id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
 
       if (!response.ok) {
-        throw new Error("Failed to delete hostel owner")
+        throw new Error("Failed to delete hostel owner");
       }
 
-      toast.success("Hostel owner deleted successfully")
-      setHostelOwners(hostelOwners.filter((o) => o._id !== ownerToDelete._id))
+      toast.success("Hostel owner deleted successfully");
+      setHostelOwners(hostelOwners.filter((o) => o._id !== ownerToDelete._id));
     } catch (error) {
-      console.error("Error deleting hostel owner:", error)
-      toast.error("Failed to delete hostel owner")
+      console.error("Error deleting hostel owner:", error);
+      toast.error("Failed to delete hostel owner");
     } finally {
-      setShowDeleteModal(false)
-      setOwnerToDelete(null)
+      setShowDeleteModal(false);
+      setOwnerToDelete(null);
     }
-  }
+  };
 
   const filteredOwners = hostelOwners.filter(
     (owner) =>
       owner.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       owner.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       owner.businessName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      owner.businessAddress?.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      owner.businessAddress?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="p-4 md:p-6">
@@ -117,17 +133,27 @@ export default function HostelOwners() {
             <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
           </div>
         ) : filteredOwners.length === 0 ? (
-          <div className="text-center p-8 text-gray-500">No hostel owners found</div>
+          <div className="text-center p-8 text-gray-500">
+            No hostel owners found
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[250px] min-w-[200px]">Owner</TableHead>
-                  <TableHead className="hidden md:table-cell min-w-[200px]">Contact</TableHead>
+                  <TableHead className="w-[250px] min-w-[200px]">
+                    Owner
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell min-w-[200px]">
+                    Contact
+                  </TableHead>
                   <TableHead className="min-w-[180px]">Business</TableHead>
-                  <TableHead className="hidden lg:table-cell w-[100px]">Status</TableHead>
-                  <TableHead className="text-right w-[100px]">Actions</TableHead>
+                  <TableHead className="hidden lg:table-cell w-[100px]">
+                    Status
+                  </TableHead>
+                  <TableHead className="text-right w-[100px]">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -150,7 +176,7 @@ export default function HostelOwners() {
                         </div>
                       </div>
                     </TableCell>
-                    
+
                     <TableCell className="hidden md:table-cell">
                       <div className="space-y-1">
                         <div className="text-sm text-gray-900 flex items-center">
@@ -163,12 +189,14 @@ export default function HostelOwners() {
                         </div>
                       </div>
                     </TableCell>
-                    
+
                     <TableCell>
                       <div className="space-y-1">
                         <div className="flex items-center">
                           <Building className="h-3 w-3 mr-1 text-gray-400 flex-shrink-0" />
-                          <div className="text-sm text-gray-900 truncate">{owner.businessName}</div>
+                          <div className="text-sm text-gray-900 truncate">
+                            {owner.businessName}
+                          </div>
                         </div>
                         {/* <div className="text-sm text-gray-500 truncate">{owner.businessAddress}</div> */}
                         <div className="lg:hidden">
@@ -189,12 +217,14 @@ export default function HostelOwners() {
                           </div>
                           <div className="text-xs text-gray-600 flex items-center">
                             <Phone className="h-3 w-3 mr-1 text-gray-400" />
-                            <span className="truncate">{owner.phoneNumber}</span>
+                            <span className="truncate">
+                              {owner.phoneNumber}
+                            </span>
                           </div>
                         </div>
                       </div>
                     </TableCell>
-                    
+
                     <TableCell className="hidden lg:table-cell">
                       {owner.verified ? (
                         <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
@@ -206,7 +236,7 @@ export default function HostelOwners() {
                         </span>
                       )}
                     </TableCell>
-                    
+
                     <TableCell className="text-right">
                       <div className="flex justify-end space-x-1">
                         <Link
@@ -239,8 +269,10 @@ export default function HostelOwners() {
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-bold mb-4">Confirm Deletion</h3>
             <p className="mb-6">
-              Are you sure you want to delete the hostel owner "{ownerToDelete?.name}" ({ownerToDelete?.businessName})?
-              This action cannot be undone and will also delete all associated hostels.
+              Are you sure you want to delete the hostel owner "
+              {ownerToDelete?.name}" ({ownerToDelete?.businessName})? This
+              action cannot be undone and will also delete all associated
+              hostels.
             </p>
             <div className="flex flex-col sm:flex-row justify-end gap-3">
               <button
@@ -260,5 +292,5 @@ export default function HostelOwners() {
         </div>
       )}
     </div>
-  )
+  );
 }

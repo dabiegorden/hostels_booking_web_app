@@ -1,76 +1,87 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { toast } from "sonner"
-import { Building, Search, Plus, Edit, Trash2, Eye, Loader2 } from "lucide-react"
-import Link from "next/link"
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import {
+  Building,
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  Loader2,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function Hostels() {
-  const [hostels, setHostels] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [hostelToDelete, setHostelToDelete] = useState(null)
+  const [hostels, setHostels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [hostelToDelete, setHostelToDelete] = useState(null);
 
   useEffect(() => {
-    fetchHostels()
-  }, [])
+    fetchHostels();
+  }, []);
 
   const fetchHostels = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       const response = await fetch("http://localhost:5000/api/admin/hostels", {
         credentials: "include",
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch hostels")
+        throw new Error("Failed to fetch hostels");
       }
 
-      const data = await response.json()
-      setHostels(data.hostels || [])
+      const data = await response.json();
+      setHostels(data.hostels || []);
     } catch (error) {
-      console.error("Error fetching hostels:", error)
-      toast.error("Failed to load hostels")
+      console.error("Error fetching hostels:", error);
+      toast.error("Failed to load hostels");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleDeleteClick = (hostel) => {
-    setHostelToDelete(hostel)
-    setShowDeleteModal(true)
-  }
+    setHostelToDelete(hostel);
+    setShowDeleteModal(true);
+  };
 
   const handleDeleteConfirm = async () => {
-    if (!hostelToDelete) return
+    if (!hostelToDelete) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/hostels/${hostelToDelete._id}`, {
-        method: "DELETE",
-        credentials: "include",
-      })
+      const response = await fetch(
+        `http://localhost:5000/api/admin/hostels/${hostelToDelete._id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
 
       if (!response.ok) {
-        throw new Error("Failed to delete hostel")
+        throw new Error("Failed to delete hostel");
       }
 
-      toast.success("Hostel deleted successfully")
-      setHostels(hostels.filter((h) => h._id !== hostelToDelete._id))
+      toast.success("Hostel deleted successfully");
+      setHostels(hostels.filter((h) => h._id !== hostelToDelete._id));
     } catch (error) {
-      console.error("Error deleting hostel:", error)
-      toast.error("Failed to delete hostel")
+      console.error("Error deleting hostel:", error);
+      toast.error("Failed to delete hostel");
     } finally {
-      setShowDeleteModal(false)
-      setHostelToDelete(null)
+      setShowDeleteModal(false);
+      setHostelToDelete(null);
     }
-  }
+  };
 
   const filteredHostels = hostels.filter(
     (hostel) =>
       hostel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      hostel.address.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      hostel.address.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="p-6">
@@ -150,7 +161,9 @@ export default function Hostels() {
                           )}
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{hostel.name}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {hostel.name}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -159,7 +172,9 @@ export default function Hostels() {
                     </td> */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {hostel.owner?.name || hostel.owner?.businessName || "N/A"}
+                        {hostel.owner?.name ||
+                          hostel.owner?.businessName ||
+                          "N/A"}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -217,7 +232,8 @@ export default function Hostels() {
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-bold mb-4">Confirm Deletion</h3>
             <p className="mb-6">
-              Are you sure you want to delete the hostel "{hostelToDelete?.name}"? This action cannot be undone.
+              Are you sure you want to delete the hostel "{hostelToDelete?.name}
+              "? This action cannot be undone.
             </p>
             <div className="flex justify-end space-x-3">
               <button
@@ -237,5 +253,5 @@ export default function Hostels() {
         </div>
       )}
     </div>
-  )
+  );
 }

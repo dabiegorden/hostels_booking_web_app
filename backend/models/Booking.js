@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const BookingSchema = new mongoose.Schema(
   {
@@ -58,8 +58,28 @@ const BookingSchema = new mongoose.Schema(
       phoneNumber: String,
       transactionId: String,
     },
+    // Paystack specific fields
+    paymentReference: {
+      type: String,
+      unique: true,
+      sparse: true, // Allows multiple null values
+    },
+    paystackTransactionId: {
+      type: String,
+    },
+    paymentVerified: {
+      type: Boolean,
+      default: false,
+    },
+    completionPaymentReference: {
+      type: String,
+    },
+    completionPaymentVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
-  { timestamps: true },
-)
+  { timestamps: true }
+);
 
-module.exports = mongoose.model("Booking", BookingSchema)
+module.exports = mongoose.model("Booking", BookingSchema);

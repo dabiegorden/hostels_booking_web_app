@@ -1,14 +1,23 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { toast } from "sonner"
-import { Building, ArrowLeft, Loader2, Plus, X, User, Mail, Phone } from "lucide-react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useState } from "react";
+import { toast } from "sonner";
+import {
+  Building,
+  ArrowLeft,
+  Loader2,
+  Plus,
+  X,
+  User,
+  Mail,
+  Phone,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function CreateHostel() {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     address: "",
@@ -21,123 +30,141 @@ export default function CreateHostel() {
     ownerPhone: "",
     ownerBusinessName: "",
     ownerBusinessAddress: "",
-  })
-  const [newAmenity, setNewAmenity] = useState("")
-  const [images, setImages] = useState([])
-  const [previewImages, setPreviewImages] = useState([])
+  });
+  const [newAmenity, setNewAmenity] = useState("");
+  const [images, setImages] = useState([]);
+  const [previewImages, setPreviewImages] = useState([]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }))
-  }
+    }));
+  };
 
   const handleAddAmenity = () => {
     if (newAmenity.trim() !== "") {
       setFormData((prev) => ({
         ...prev,
         amenities: [...prev.amenities, newAmenity.trim()],
-      }))
-      setNewAmenity("")
+      }));
+      setNewAmenity("");
     }
-  }
+  };
 
   const handleRemoveAmenity = (index) => {
     setFormData((prev) => ({
       ...prev,
       amenities: prev.amenities.filter((_, i) => i !== index),
-    }))
-  }
+    }));
+  };
 
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files)
+    const files = Array.from(e.target.files);
     if (files.length > 0) {
-      setImages((prevImages) => [...prevImages, ...files])
+      setImages((prevImages) => [...prevImages, ...files]);
 
       // Create preview URLs for the images
-      const newPreviewImages = files.map((file) => URL.createObjectURL(file))
-      setPreviewImages((prevPreviews) => [...prevPreviews, ...newPreviewImages])
+      const newPreviewImages = files.map((file) => URL.createObjectURL(file));
+      setPreviewImages((prevPreviews) => [
+        ...prevPreviews,
+        ...newPreviewImages,
+      ]);
     }
-  }
+  };
 
   const handleRemoveImage = (index) => {
     // Revoke the object URL to avoid memory leaks
-    URL.revokeObjectURL(previewImages[index])
+    URL.revokeObjectURL(previewImages[index]);
 
-    setImages((prevImages) => prevImages.filter((_, i) => i !== index))
-    setPreviewImages((prevPreviews) => prevPreviews.filter((_, i) => i !== index))
-  }
+    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
+    setPreviewImages((prevPreviews) =>
+      prevPreviews.filter((_, i) => i !== index)
+    );
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Basic validation
     if (!formData.name || !formData.address) {
-      toast.error("Please fill in all required hostel fields")
-      return
+      toast.error("Please fill in all required hostel fields");
+      return;
     }
 
-    if (!formData.ownerName || !formData.ownerEmail || !formData.ownerPhone || !formData.ownerBusinessName) {
-      toast.error("Please fill in all required owner information fields")
-      return
+    if (
+      !formData.ownerName ||
+      !formData.ownerEmail ||
+      !formData.ownerPhone ||
+      !formData.ownerBusinessName
+    ) {
+      toast.error("Please fill in all required owner information fields");
+      return;
     }
 
     try {
-      setLoading(true)
+      setLoading(true);
 
       // Create FormData object for multipart/form-data submission
-      const formDataObj = new FormData()
+      const formDataObj = new FormData();
 
       // Add hostel fields
-      formDataObj.append("name", formData.name)
-      formDataObj.append("address", formData.address)
-      formDataObj.append("description", formData.description || "")
-      formDataObj.append("policies", formData.policies || "")
+      formDataObj.append("name", formData.name);
+      formDataObj.append("address", formData.address);
+      formDataObj.append("description", formData.description || "");
+      formDataObj.append("policies", formData.policies || "");
 
       // Add owner information
-      formDataObj.append("ownerName", formData.ownerName)
-      formDataObj.append("ownerEmail", formData.ownerEmail)
-      formDataObj.append("ownerPhone", formData.ownerPhone)
-      formDataObj.append("ownerBusinessName", formData.ownerBusinessName)
-      formDataObj.append("ownerBusinessAddress", formData.ownerBusinessAddress || "")
+      formDataObj.append("ownerName", formData.ownerName);
+      formDataObj.append("ownerEmail", formData.ownerEmail);
+      formDataObj.append("ownerPhone", formData.ownerPhone);
+      formDataObj.append("ownerBusinessName", formData.ownerBusinessName);
+      formDataObj.append(
+        "ownerBusinessAddress",
+        formData.ownerBusinessAddress || ""
+      );
 
       // Add amenities as JSON string
-      formDataObj.append("amenities", JSON.stringify(formData.amenities))
+      formDataObj.append("amenities", JSON.stringify(formData.amenities));
 
       // Add images
       images.forEach((image) => {
-        formDataObj.append("images", image)
-      })
+        formDataObj.append("images", image);
+      });
 
       // Send the request with FormData
       const response = await fetch("http://localhost:5000/api/admin/hostels", {
         method: "POST",
         body: formDataObj,
         credentials: "include",
-      })
+      });
 
       if (!response.ok) {
-        console.error("Hostel creation failed with status:", response.status)
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(`Failed to create hostel: ${errorData.message || response.statusText}`)
+        console.error("Hostel creation failed with status:", response.status);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          `Failed to create hostel: ${errorData.message || response.statusText}`
+        );
       }
 
-      toast.success("Hostel created successfully")
-      router.push("/admin-dashboard/hostels")
+      toast.success("Hostel created successfully");
+      router.push("/admin-dashboard/hostels");
     } catch (error) {
-      console.error("Error creating hostel:", error)
-      toast.error(`Failed to create hostel: ${error.message}`)
+      console.error("Error creating hostel:", error);
+      toast.error(`Failed to create hostel: ${error.message}`);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="p-6">
       <div className="mb-6">
-        <Link href="/admin-dashboard/hostels" className="flex items-center text-blue-600 hover:text-blue-800">
+        <Link
+          href="/admin-dashboard/hostels"
+          className="flex items-center text-blue-600 hover:text-blue-800"
+        >
           <ArrowLeft className="h-4 w-4 mr-1" />
           Back to Hostels
         </Link>
@@ -153,7 +180,10 @@ export default function CreateHostel() {
           <h2 className="text-lg font-semibold mb-4">Hostel Information</h2>
 
           <div className="mb-6">
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Hostel Name <span className="text-red-500">*</span>
             </label>
             <input
@@ -168,7 +198,10 @@ export default function CreateHostel() {
           </div>
 
           <div className="mb-6">
-            <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="address"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Address <span className="text-red-500">*</span>
             </label>
             <input
@@ -183,7 +216,10 @@ export default function CreateHostel() {
           </div>
 
           <div className="mb-6">
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="description"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Description
             </label>
             <textarea
@@ -197,7 +233,10 @@ export default function CreateHostel() {
           </div>
 
           <div className="mb-6">
-            <label htmlFor="policies" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="policies"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Policies
             </label>
             <textarea
@@ -211,7 +250,9 @@ export default function CreateHostel() {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Amenities</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Amenities
+            </label>
             <div className="flex items-center mb-2">
               <input
                 type="text"
@@ -230,7 +271,10 @@ export default function CreateHostel() {
             </div>
             <div className="flex flex-wrap gap-2 mt-2">
               {formData.amenities.map((amenity, index) => (
-                <div key={index} className="flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                <div
+                  key={index}
+                  className="flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full"
+                >
                   <span>{amenity}</span>
                   <button
                     type="button"
@@ -252,7 +296,10 @@ export default function CreateHostel() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
-                <label htmlFor="ownerName" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="ownerName"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Owner Name <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -270,7 +317,10 @@ export default function CreateHostel() {
               </div>
 
               <div>
-                <label htmlFor="ownerEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="ownerEmail"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Owner Email <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -290,7 +340,10 @@ export default function CreateHostel() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
-                <label htmlFor="ownerPhone" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="ownerPhone"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Owner Phone <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -308,7 +361,10 @@ export default function CreateHostel() {
               </div>
 
               <div>
-                <label htmlFor="ownerBusinessName" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="ownerBusinessName"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Business Name <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -327,7 +383,10 @@ export default function CreateHostel() {
             </div>
 
             <div className="mb-6">
-              <label htmlFor="ownerBusinessAddress" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="ownerBusinessAddress"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Business Address
               </label>
               <input
@@ -342,7 +401,9 @@ export default function CreateHostel() {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Hostel Images</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Hostel Images
+            </label>
             <div className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center">
               <input
                 type="file"
@@ -352,10 +413,17 @@ export default function CreateHostel() {
                 onChange={handleImageChange}
                 className="hidden"
               />
-              <label htmlFor="images" className="cursor-pointer flex flex-col items-center justify-center">
+              <label
+                htmlFor="images"
+                className="cursor-pointer flex flex-col items-center justify-center"
+              >
                 <Plus className="h-10 w-10 text-gray-400 mb-2" />
-                <span className="text-sm text-gray-500">Click to upload images</span>
-                <span className="text-xs text-gray-400 mt-1">PNG, JPG, JPEG up to 5MB</span>
+                <span className="text-sm text-gray-500">
+                  Click to upload images
+                </span>
+                <span className="text-xs text-gray-400 mt-1">
+                  PNG, JPG, JPEG up to 5MB
+                </span>
               </label>
             </div>
 
@@ -400,5 +468,5 @@ export default function CreateHostel() {
         </form>
       </div>
     </div>
-  )
+  );
 }
